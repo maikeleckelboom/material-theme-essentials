@@ -1,0 +1,17 @@
+.changeset/
+.github/
+.idea/
+.npmignore
+assets/
+bun.lockb
+dist/
+node_modules/
+package-lock.json
+package.json
+src/
+test/
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+vitest.shims.d.ts
+vitest.workspace.ts
