@@ -24,7 +24,7 @@ export function createImageDataFromBitmap(bitmap: ImageBitmap): ImageData {
   return context.getImageData(0, 0, bitmap.width, bitmap.height)
 }
 
-export async function createImageDataFromSVGElement(
+export async function createImageDataFromSVG(
   svg: SVGElement,
   signal?: AbortSignal,
 ): Promise<ImageData> {
@@ -62,15 +62,10 @@ export async function createImageBitmapFromURL(
   url: string,
   signal?: AbortSignal,
 ): Promise<ImageBitmap> {
-  if (!createImageBitmap) {
-    throw new Error('createImageBitmap API unavailable')
-  }
-
+  if (!createImageBitmap) throw new Error('createImageBitmap API unavailable')
   const resolvedUrl = pathRegex.test(url) ? new URL(url, location.href).href : url
-
   const response = await fetch(resolvedUrl, { signal, mode: 'cors' })
   const blob = await response.blob()
-
   return createImageBitmap(blob)
 }
 

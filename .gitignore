@@ -5,7 +5,6 @@ node_modules/
 dist/
 
 # Test files and coverage
-test/
 coverage/
 .vitest/
 

@@ -58,6 +58,11 @@ export type MaterialThemeOptions = MaterialSchemeOptions & {
   staticColors?: StaticColor[]
 }
 
+// todo make overload that accepts a URL as direct argument
+// createMaterialTheme('https://example.com/image.jpg')
+// createMaterialTheme('#FFC157')
+// createMaterialTheme(0xFFC157)
+
 export async function createMaterialTheme(
   options: MaterialThemeOptions,
 ): Promise<MaterialTheme> {
@@ -124,6 +129,3 @@ export async function createMaterialTheme(
     ),
   }
 }
-
-// todo make overload that accepts a URL as direct argument
-// createMaterialTheme('https://example.com/image.jpg')
