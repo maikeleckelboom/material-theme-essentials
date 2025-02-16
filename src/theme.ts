@@ -66,7 +66,7 @@ export type MaterialThemeOptions = MaterialSchemeOptions & {
 export async function createMaterialTheme(
   options: MaterialThemeOptions,
 ): Promise<MaterialTheme> {
-  const sourceColorArgb = await resolveSeedToSourceColor(options.seed || options.primary)
+  const sourceColor = await resolveSeedToSourceColor(options.seed || options.primary)
 
   const {
     primary,
@@ -81,7 +81,7 @@ export async function createMaterialTheme(
 
   function createSchemeForMode(isDark: boolean) {
     return createMaterialScheme({
-      seed: sourceColorArgb,
+      seed: sourceColor,
       isDark,
       primary,
       secondary,
@@ -106,7 +106,7 @@ export async function createMaterialTheme(
 
   return {
     seed: options.seed,
-    sourceColorArgb,
+    sourceColorArgb: sourceColor,
     contrastLevel,
     variant,
     schemes: {
@@ -114,7 +114,7 @@ export async function createMaterialTheme(
       dark: createSchemeForMode(true),
     },
     palettes: {
-      primary: TonalPalette.fromInt(primary || sourceColorArgb),
+      primary: TonalPalette.fromInt(primary || sourceColor),
       secondary: secondary ? TonalPalette.fromInt(secondary) : core.a2,
       tertiary: tertiary ? TonalPalette.fromInt(tertiary) : core.a3,
       neutral: neutral ? TonalPalette.fromInt(neutral) : core.n1,
@@ -122,7 +122,7 @@ export async function createMaterialTheme(
       error: core.error,
     },
     staticColors: staticColors.map((color) =>
-      customColor(sourceColorArgb, {
+      customColor(sourceColor, {
         ...color,
         blend: !!color.blend,
       }),

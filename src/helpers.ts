@@ -1,4 +1,4 @@
-import { quantizeImage } from './quantize/utils'
+import { quantizeWorker } from './quantize/utils'
 import { score } from './score'
 import {
   createImageBitmapFromURL,
@@ -12,7 +12,7 @@ async function analyzeImageForDominantColor(
   bitmap: ImageBitmap,
   fromMaxColors?: number,
 ): Promise<number> {
-  const colorToCount = await quantizeImage(bitmap, { maxColors: fromMaxColors })
+  const colorToCount = await quantizeWorker(bitmap, { maxColors: fromMaxColors })
   const [seedColor] = score(colorToCount, { desired: 1 })
   return seedColor
 }

@@ -3,10 +3,6 @@ import { createMaterialTheme, Seed } from '../src/theme'
 import { argbFromHex } from '@material/material-color-utilities'
 import { createImageDataFromSVG } from '../src/image'
 
-const TEST_IMAGE_URL: string = 'https://i.ibb.co/hV3qmLK/Cloudtion-Example.jpg'
-const TEST_VIDEO_URL: string = 'https://www.w3schools.com/html/mov_bbb.mp4'
-const TEST_REL_PATH: string = '../../../assets/wallpaper-small.webp'
-
 function createSVGRoot(width = 50, height = 50): SVGSVGElement {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   svg.setAttribute('width', width.toString())
@@ -55,14 +51,14 @@ function createOffscreenCanvas(
   return canvas
 }
 
-function createImageElement(url: string = TEST_IMAGE_URL): HTMLImageElement {
+function createImageElement(url: string): HTMLImageElement {
   const image = new Image()
   image.crossOrigin = 'anonymous'
   image.src = url
   return image
 }
 
-function createVideoElement(url: string = TEST_VIDEO_URL): HTMLVideoElement {
+function createVideoElement(url: string): HTMLVideoElement {
   const video = document.createElement('video')
   video.src = url
   video.muted = true
@@ -70,31 +66,39 @@ function createVideoElement(url: string = TEST_VIDEO_URL): HTMLVideoElement {
   return video
 }
 
-async function createBlob(): Promise<Blob> {
-  const res = await fetch(TEST_IMAGE_URL, { mode: 'cors' })
+async function createBlob(url: string): Promise<Blob> {
+  const res = await fetch(url, { mode: 'cors' })
   return res.blob()
 }
 
+let hex: string
+let argb: number
+let url: string
+let relPath: string
 let blob: Blob
 let htmlImageElement: HTMLImageElement
 let htmlVideoElement: HTMLVideoElement
 let svgElement: SVGSVGElement
 
 beforeAll(async () => {
-  blob = await createBlob()
-  htmlImageElement = createImageElement()
-  htmlVideoElement = createVideoElement()
-  svgElement = createSVGWithFill('red')
+  hex = '#00bbff'
+  argb = argbFromHex(hex)
+  url = 'https://i.ibb.co/hV3qmLK/Cloudtion-Example.jpg'
+  relPath = '../../../assets/wallpaper-small.webp'
+  blob = await createBlob(url)
+  htmlImageElement = createImageElement(url)
+  htmlVideoElement = createVideoElement('https://www.w3schools.com/html/mov_bbb.mp4')
+  svgElement = createSVGWithFill()
 })
 
 describe('createMaterialTheme', () => {
   describe('Basic Input Types', () => {
-    const basicInputTypes: { name: string; seed: Seed | (() => Seed) }[] = [
-      { name: 'ARGB', seed: argbFromHex('#00bbff') },
-      { name: 'HEX', seed: '#00bbff' },
-      { name: 'Url', seed: TEST_IMAGE_URL },
-      { name: 'RelPath', seed: TEST_REL_PATH },
-      { name: 'Blob', seed: () => blob },
+    const basicInputTypes: { name: string; seed: () => Seed }[] = [
+      { name: 'argb', seed: () => argb },
+      { name: 'hex', seed: () => hex },
+      { name: 'url', seed: () => url },
+      { name: 'relPath', seed: () => relPath },
+      { name: 'blob', seed: () => blob },
     ]
 
     basicInputTypes.forEach(({ name, seed }) => {

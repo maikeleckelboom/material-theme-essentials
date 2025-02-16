@@ -2,7 +2,7 @@ import { createQuantizeWorker } from './index'
 import { QuantizeWorkerOptions, QuantizeWorkerResult } from './types'
 import { isDoneEvent } from './guards'
 
-export async function quantizeImage(
+export async function quantizeWorker(
   image: ImageBitmap,
   options: QuantizeWorkerOptions = {},
 ): Promise<QuantizeWorkerResult> {
