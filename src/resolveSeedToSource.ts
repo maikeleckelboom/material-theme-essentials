@@ -7,6 +7,7 @@ import {
   urlOrPathRegex,
 } from './image'
 import { argbFromHex } from '@material/material-color-utilities'
+import { Seed } from './createMaterialTheme'
 
 async function analyzeImageForDominantColor(
   bitmap: ImageBitmap,
@@ -17,9 +18,7 @@ async function analyzeImageForDominantColor(
   return seedColor
 }
 
-export async function resolveSeedToSource(
-  seed: ImageBitmapSource | SVGElement | number | string | undefined,
-): Promise<number> {
+export async function resolveSeedToSource(seed: Seed): Promise<number> {
   if (typeof seed === 'number') return seed
 
   if (typeof seed === 'string') {

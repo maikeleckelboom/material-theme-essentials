@@ -1,7 +1,6 @@
 import {
   customColor,
   CustomColorGroup,
-  DynamicScheme,
   TonalPalette,
 } from '@material/material-color-utilities'
 import { createMaterialScheme, Variant } from './scheme'
@@ -40,27 +39,7 @@ export type MaterialSchemeOptions =
   | (MaterialSchemeOptionsBase & { primary: number; seed?: Seed })
   | (MaterialSchemeOptionsBase & { seed: Seed; primary?: number })
 
-type ColorScheme = Record<string, number>
-
-export interface MaterialTheme {
-  source: Seed | undefined
-  contrastLevel: number
-  variant: Variant
-  schemes: {
-    light: DynamicScheme
-    dark: DynamicScheme
-  }
-  palettes: {
-    primary: TonalPalette
-    secondary: TonalPalette
-    tertiary: TonalPalette
-    neutral: TonalPalette
-    neutralVariant: TonalPalette
-    error: TonalPalette
-  }
-  staticColors: CustomColorGroup[]
-  colorScheme: ColorScheme
-}
+export type ColorScheme = Record<string, number>
 
 export interface StaticColor {
   name: string
@@ -70,6 +49,25 @@ export interface StaticColor {
 
 export type MaterialThemeOptions = MaterialSchemeOptions & {
   staticColors?: StaticColor[]
+}
+
+export interface MaterialTheme {
+  source: Seed | undefined
+  contrastLevel: number
+  variant: Variant
+  schemes: {
+    light: ColorScheme
+    dark: ColorScheme
+  }
+  palettes: {
+    primary: TonalPalette
+    secondary: TonalPalette
+    tertiary: TonalPalette
+    neutral: TonalPalette
+    neutralVariant: TonalPalette
+    error: TonalPalette
+  }
+  customColors: CustomColorGroup[]
 }
 
 function isMaterialThemeOptions(
@@ -100,8 +98,8 @@ export async function createMaterialTheme(
     staticColors = [],
   } = opts
 
-  function createSchemeForMode(isDark: boolean) {
-    return createMaterialScheme({
+  const createSchemeForMode = (isDark: boolean = false) =>
+    createMaterialScheme({
       seed: source,
       isDark,
       primary,
@@ -112,9 +110,8 @@ export async function createMaterialTheme(
       contrastLevel,
       variant,
     })
-  }
 
-  const lightScheme = createSchemeForMode(false)
+  const lightScheme = createSchemeForMode()
   const darkScheme = createSchemeForMode(true)
 
   const core = {
@@ -131,8 +128,8 @@ export async function createMaterialTheme(
     contrastLevel,
     variant,
     schemes: {
-      light: lightScheme,
-      dark: darkScheme,
+      light: extractColorsFromDynamicScheme(lightScheme, false),
+      dark: extractColorsFromDynamicScheme(darkScheme, true),
     },
     palettes: {
       primary: TonalPalette.fromInt(primary || source),
@@ -142,15 +139,11 @@ export async function createMaterialTheme(
       neutralVariant: neutralVariant ? TonalPalette.fromInt(neutralVariant) : core.n2,
       error: core.error,
     },
-    staticColors: staticColors.map((color) =>
+    customColors: staticColors.map((color) =>
       customColor(source, {
         ...color,
         blend: !!color.blend,
       }),
     ),
-    colorScheme: {
-      ...extractColorsFromDynamicScheme(lightScheme),
-      ...extractColorsFromDynamicScheme(darkScheme, true),
-    },
   }
 }

@@ -58,8 +58,8 @@ export function sortColorsByCoolness(colors: Hct[], cache: TemperatureCache): Hc
   )
 }
 
-export function isColorBetween(angle: number, a: number, b: number): boolean {
-  return TemperatureCache.isBetween(angle, a, b)
+export function isColorBetween(angle: number, color1: number, color2: number): boolean {
+  return TemperatureCache.isBetween(angle, color1, color2)
 }
 
 export function getColorsByHueRange(
