@@ -10,7 +10,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "lib": ["dom", "esnext"],
-    "types": ["vitest/globals", "@vitest/browser/providers/playwright"]
+    "types": ["vitest/globals", "@vitest/browser/providers/playwright"],
+    "exclude": ["**/*.test.ts", "dist", "node_modules"]
   },
   "include": ["src"]
 }

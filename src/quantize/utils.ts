@@ -1,6 +1,11 @@
 import { createQuantizeWorker } from './index'
 import { QuantizeWorkerOptions, QuantizeWorkerResult } from './types'
 import { isDoneEvent } from './guards'
+import { QuantizerCelebi } from '@material/material-color-utilities'
+
+export function quantize(pixels: number[], maxColors: number = 200): Map<number, number> {
+  return QuantizerCelebi.quantize(pixels, maxColors)
+}
 
 export async function quantizeWorker(
   image: ImageBitmap,
@@ -32,6 +37,6 @@ export async function quantizeWorker(
       worker.terminate()
     }
 
-    worker.postMessage({ type: 'start', image, ...options })
+    worker.postMessage({ type: 'start', image, ...options }, [image])
   })
 }

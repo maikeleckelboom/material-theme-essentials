@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import * as path from 'node:path'
 
 export default defineConfig({
   build: {
@@ -10,7 +11,13 @@ export default defineConfig({
       formats: ['es', 'cjs'],
     },
     rollupOptions: {
-      external: ['@material/material-color-utilities'],
+      // Exclude test files and external dependencies from the bundle
+      external: [/\.test\.ts$/, '@material/material-color-utilities'],
+    },
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
     },
   },
   plugins: [

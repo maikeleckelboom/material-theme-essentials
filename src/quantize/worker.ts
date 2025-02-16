@@ -1,7 +1,7 @@
 import { isStartEvent } from './guards'
 import type { QuantizeWorkerEvent } from './types'
 import { createImageDataFromBitmap, pixelsFromImageData } from '../image'
-import { quantize } from './index'
+import { quantize } from './utils'
 
 async function onMessage(event: QuantizeWorkerEvent) {
   if (!isStartEvent(event)) return

@@ -11,7 +11,7 @@ import {
   SchemeVibrant,
   TonalPalette,
 } from '@material/material-color-utilities'
-import { MaterialSchemeOptions } from './createMaterialTheme'
+import { MaterialSchemeOptions } from './themeFromSeed'
 import { toHct } from './hct'
 
 export enum Variant {
@@ -38,7 +38,7 @@ const VARIANT_TO_SCHEME_MAP = {
   [Variant.FRUIT_SALAD]: SchemeFruitSalad,
 } as const
 
-export function schemeForVariant(
+export function getSchemeForVariant(
   variant: Variant,
 ): (typeof VARIANT_TO_SCHEME_MAP)[Variant] {
   return VARIANT_TO_SCHEME_MAP[variant]
@@ -64,22 +64,15 @@ function tryCreateTonalPalette(
   return typeof color === 'number' ? TonalPalette.fromInt(color) : fallback
 }
 
-function getSeedColor(options: MaterialSchemeOptions): number | undefined {
-  if (typeof options.seed === 'number') {
-    return options.seed
-  }
-}
-
 /**
  * Generates a dynamic color scheme based on the provided configuration options.
  */
 export function createMaterialScheme(options: MaterialSchemeOptions): DynamicScheme {
   const { contrastLevel = 0, isDark = false, variant = Variant.TONAL_SPOT } = options
 
-  const seedColor = getSeedColor(options)
-  const sourceColorArgb = Number(seedColor || options.primary)
+  const sourceColorArgb = Number(options.seed || options.primary)
 
-  const SchemeVariant = schemeForVariant(variant)
+  const SchemeVariant = getSchemeForVariant(variant)
   const scheme = new SchemeVariant(toHct(sourceColorArgb), isDark, contrastLevel)
 
   if (isSeedColorBased(options)) {
