@@ -7,7 +7,7 @@ import {
   urlOrPathRegex,
 } from './image'
 import { argbFromHex } from '@material/material-color-utilities'
-import { Seed } from './createMaterialTheme'
+import type { Seed } from './createMaterialTheme'
 
 async function analyzeImageForDominantColor(
   bitmap: ImageBitmap,

@@ -15,7 +15,7 @@ export interface CorePaletteColors {
   neutralVariant?: number
 }
 
-export interface MaterialSchemeOptionsBase extends CorePaletteColors {
+export interface BaseMaterialSchemeOptions extends CorePaletteColors {
   variant?: Variant
   contrastLevel?: number
   isDark?: boolean
@@ -34,10 +34,12 @@ export type Seed =
   | VideoFrame
   | Blob
   | ImageData
+  | ImageBitmapSource
+  | undefined
 
 export type MaterialSchemeOptions =
-  | (MaterialSchemeOptionsBase & { primary: number; seed?: Seed })
-  | (MaterialSchemeOptionsBase & { seed: Seed; primary?: number })
+  | (BaseMaterialSchemeOptions & { primary: number; seed?: Seed })
+  | (BaseMaterialSchemeOptions & { seed: Seed; primary?: number })
 
 export type ColorScheme = Record<string, number>
 
@@ -52,7 +54,7 @@ export type MaterialThemeOptions = MaterialSchemeOptions & {
 }
 
 export interface MaterialTheme {
-  source: Seed | undefined
+  source: Seed
   contrastLevel: number
   variant: Variant
   schemes: {
