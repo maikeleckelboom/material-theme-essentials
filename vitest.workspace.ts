@@ -6,10 +6,11 @@ export default defineWorkspace([
     test: {
       browser: {
         enabled: true,
-        provider: 'playwright',
         headless: true,
+        provider: 'playwright',
         viewport: { width: 1920, height: 1080 },
         instances: [{ browser: 'chromium' }],
+        screenshotFailures: false,
       },
     },
   },

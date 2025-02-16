@@ -5,7 +5,7 @@ import {
   TonalPalette,
 } from '@material/material-color-utilities'
 import { createMaterialScheme, Variant } from './scheme'
-import { resolveSeedToSourceColor } from './helpers'
+import { resolveSeedToSourceColor } from './resolveSeedToSourceColor'
 
 export interface CorePaletteColors {
   primary?: number

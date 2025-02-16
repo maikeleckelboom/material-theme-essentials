@@ -1,8 +1,5 @@
 import { argbFromRgb } from '@material/material-color-utilities'
-
-const HEX_PATTERN = '^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$'
-const URL_PATTERN = '^(https?:\\/\\/|data:image|file:|\\\\\\\\)'
-const PATH_PATTERN = '^(?!$)(?:(?:\\.\\.\\/)+|\\.\\/|\\/|)(?:[^/]+\\/?)*[^/]*$'
+import { HEX_PATTERN, URL_PATTERN, PATH_PATTERN } from './patterns'
 
 export const hexRegex = new RegExp(HEX_PATTERN, 'i')
 export const pathRegex = new RegExp(PATH_PATTERN, 'i')
@@ -24,7 +21,7 @@ export function createImageDataFromBitmap(bitmap: ImageBitmap): ImageData {
   return context.getImageData(0, 0, bitmap.width, bitmap.height)
 }
 
-export async function createImageDataFromSVG(
+export async function createImageDataFromSvg(
   svg: SVGElement,
   signal?: AbortSignal,
 ): Promise<ImageData> {
@@ -58,7 +55,7 @@ export async function createImageDataFromSVG(
   }
 }
 
-export async function createImageBitmapFromURL(
+export async function createImageBitmapFromUrl(
   url: string,
   signal?: AbortSignal,
 ): Promise<ImageBitmap> {
