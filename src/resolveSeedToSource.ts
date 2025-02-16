@@ -17,7 +17,7 @@ async function analyzeImageForDominantColor(
   return seedColor
 }
 
-export async function resolveSeedToSourceColor(
+export async function resolveSeedToSource(
   seed: ImageBitmapSource | SVGElement | number | string | undefined,
 ): Promise<number> {
   if (typeof seed === 'number') return seed

@@ -5,7 +5,8 @@ import {
   TonalPalette,
 } from '@material/material-color-utilities'
 import { createMaterialScheme, Variant } from './scheme'
-import { resolveSeedToSourceColor } from './resolveSeedToSourceColor'
+import { resolveSeedToSource } from './resolveSeedToSource'
+import { extractColorsFromDynamicScheme } from './colorScheme'
 
 export interface CorePaletteColors {
   primary?: number
@@ -15,22 +16,34 @@ export interface CorePaletteColors {
   neutralVariant?: number
 }
 
-export interface BaseMaterialSchemeOptions extends CorePaletteColors {
+export interface MaterialSchemeOptionsBase extends CorePaletteColors {
   variant?: Variant
   contrastLevel?: number
   isDark?: boolean
   isAmoled?: boolean
 }
 
-export type Seed = SVGElement | ImageBitmapSource | number | string
+export type Seed =
+  | number
+  | string
+  | SVGElement
+  | HTMLOrSVGImageElement
+  | HTMLVideoElement
+  | HTMLCanvasElement
+  | ImageBitmap
+  | OffscreenCanvas
+  | VideoFrame
+  | Blob
+  | ImageData
 
 export type MaterialSchemeOptions =
-  | (BaseMaterialSchemeOptions & { primary: number; seed?: Seed })
-  | (BaseMaterialSchemeOptions & { seed: Seed; primary?: number })
+  | (MaterialSchemeOptionsBase & { primary: number; seed?: Seed })
+  | (MaterialSchemeOptionsBase & { seed: Seed; primary?: number })
+
+type ColorScheme = Record<string, number>
 
 export interface MaterialTheme {
-  seed: Seed | undefined
-  sourceColorArgb: number
+  source: Seed | undefined
   contrastLevel: number
   variant: Variant
   schemes: {
@@ -46,6 +59,7 @@ export interface MaterialTheme {
     error: TonalPalette
   }
   staticColors: CustomColorGroup[]
+  colorScheme: ColorScheme
 }
 
 export interface StaticColor {
@@ -58,15 +72,22 @@ export type MaterialThemeOptions = MaterialSchemeOptions & {
   staticColors?: StaticColor[]
 }
 
-// todo make overload that accepts a URL as direct argument
-// createMaterialTheme('https://example.com/image.jpg')
-// createMaterialTheme('#FFC157')
-// createMaterialTheme(0xFFC157)
+function isMaterialThemeOptions(
+  value: MaterialThemeOptions | Seed,
+): value is MaterialThemeOptions {
+  return (
+    value !== null && typeof value === 'object' && ('primary' in value || 'seed' in value)
+  )
+}
 
 export async function createMaterialTheme(
-  options: MaterialThemeOptions,
+  optionsOrSeed: MaterialThemeOptions | Seed,
 ): Promise<MaterialTheme> {
-  const sourceColor = await resolveSeedToSourceColor(options.seed || options.primary)
+  const opts: MaterialThemeOptions = isMaterialThemeOptions(optionsOrSeed)
+    ? optionsOrSeed
+    : { seed: optionsOrSeed }
+
+  const source = await resolveSeedToSource(opts.seed || opts.primary)
 
   const {
     primary,
@@ -77,11 +98,11 @@ export async function createMaterialTheme(
     contrastLevel = 0,
     variant = Variant.TONAL_SPOT,
     staticColors = [],
-  } = options
+  } = opts
 
   function createSchemeForMode(isDark: boolean) {
     return createMaterialScheme({
-      seed: sourceColor,
+      seed: source,
       isDark,
       primary,
       secondary,
@@ -94,6 +115,7 @@ export async function createMaterialTheme(
   }
 
   const lightScheme = createSchemeForMode(false)
+  const darkScheme = createSchemeForMode(true)
 
   const core = {
     a1: lightScheme.primaryPalette,
@@ -105,16 +127,15 @@ export async function createMaterialTheme(
   }
 
   return {
-    seed: options.seed,
-    sourceColorArgb: sourceColor,
+    source,
     contrastLevel,
     variant,
     schemes: {
       light: lightScheme,
-      dark: createSchemeForMode(true),
+      dark: darkScheme,
     },
     palettes: {
-      primary: TonalPalette.fromInt(primary || sourceColor),
+      primary: TonalPalette.fromInt(primary || source),
       secondary: secondary ? TonalPalette.fromInt(secondary) : core.a2,
       tertiary: tertiary ? TonalPalette.fromInt(tertiary) : core.a3,
       neutral: neutral ? TonalPalette.fromInt(neutral) : core.n1,
@@ -122,10 +143,14 @@ export async function createMaterialTheme(
       error: core.error,
     },
     staticColors: staticColors.map((color) =>
-      customColor(sourceColor, {
+      customColor(source, {
         ...color,
         blend: !!color.blend,
       }),
     ),
+    colorScheme: {
+      ...extractColorsFromDynamicScheme(lightScheme),
+      ...extractColorsFromDynamicScheme(darkScheme, true),
+    },
   }
 }
