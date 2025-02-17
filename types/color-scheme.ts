@@ -1,5 +1,4 @@
 import { Strategy } from '../src/themeFromSeed'
-import { ColorSchemeSource } from '../src/toColorScheme'
 
 export interface BaseColorScheme {
   primaryPaletteKeyColor: number
@@ -117,42 +116,4 @@ const testActiveWithSplitByMode: ColorScheme<'split-by-mode'> = {
   primaryLight: 0,
   // @ts-expect-error 'split-by-mode' never returns un-suffixed keys
   primary: 0,
-}
-
-export function toColorScheme2<S extends Strategy, V extends 'light' | 'dark' | never>(
-  theme: ColorSchemeSource,
-  options: { strategy: S; colorMode: V },
-): ColorScheme<S, V> {
-  const { strategy } = options
-
-  if (strategy === 'active-only') {
-    return {
-      primary: 0,
-      secondary: 0,
-    } as ColorScheme<'active-only'>
-  }
-
-  if (strategy === 'active-with-opposite') {
-    return {
-      primary: 0,
-      primaryLight: 0,
-    } as ColorScheme<'active-with-opposite', 'light'>
-  }
-
-  if (strategy === 'split-by-mode') {
-    return {
-      primaryDark: 0,
-      primaryLight: 0,
-    } as ColorScheme<'split-by-mode', 'dark' | 'light'>
-  }
-
-  if (strategy === 'all-variants') {
-    return {
-      primary: 0,
-      primaryDark: 0,
-      primaryLight: 0,
-    } as ColorScheme<'all-variants'>
-  }
-
-  throw new Error('Invalid strategy')
 }

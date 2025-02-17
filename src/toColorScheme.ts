@@ -6,41 +6,7 @@ import {
   MaterialDynamicColors,
 } from '@material/material-color-utilities'
 import { Strategy } from './themeFromSeed'
-import { BaseColorScheme } from '../types/color-scheme'
-
-// Helper types to transform the keys.
-// type AppendSuffix<T extends string, S extends string> = `${T}${S}`
-// type SuffixScheme<T, S extends string> = {
-//   [K in keyof T as K extends string ? AppendSuffix<K, S> : never]: T[K]
-// }
-
-// Overloads for unpackSchemeColors:
-// - When no suffix is provided, we return the BaseColorScheme as is.
-// - When a suffix is provided, each key is remapped with the suffix.
-// export function unpackSchemeColors(scheme: DynamicScheme): BaseColorScheme
-// export function unpackSchemeColors<S extends string>(
-//   scheme: DynamicScheme,
-//   suffix: S,
-// ): SuffixScheme<BaseColorScheme, S>
-
-// Implementation remains the same.
-// export function unpackSchemeColors<S extends string>(
-//   scheme: DynamicScheme,
-//   suffix?: S,
-// ): BaseColorScheme | SuffixScheme<BaseColorScheme, S> {
-//   const colors: Record<string, number> = {}
-//
-//   for (const [colorName, ColorClass] of Object.entries(MaterialDynamicColors)) {
-//     if (!(ColorClass instanceof DynamicColor)) continue
-//
-//     const resolvedColorName = `${colorName}${suffix ?? ''}`
-//     colors[resolvedColorName] = ColorClass.getArgb(scheme)
-//   }
-//
-//   // If no suffix was provided, we assume the keys already match BaseColorScheme.
-//   // Otherwise, we assert the mapped type.
-//   return colors as unknown as SuffixScheme<BaseColorScheme, string>
-// }
+import { ColorScheme } from '../types/color-scheme'
 
 export function unpackSchemeColors(scheme: DynamicScheme, suffix?: string) {
   const colors: Record<string, number> = {}
@@ -52,7 +18,7 @@ export function unpackSchemeColors(scheme: DynamicScheme, suffix?: string) {
     colors[resolvedColorName] = ColorClass.getArgb(scheme)
   }
 
-  return colors as unknown as BaseColorScheme
+  return colors
 }
 
 export function camelCase(str: string): string {
@@ -130,7 +96,7 @@ export function unpackCustomColorGroup(
   }
 }
 
-function unpackCustomColorGroups(
+export function unpackCustomColorGroups(
   customColors?: CustomColorGroup[],
   options: { isDark?: boolean; strategy?: Strategy } = {},
 ): Record<string, number> {
@@ -151,17 +117,14 @@ export interface ColorSchemeSource {
   customColors?: CustomColorGroup[]
 }
 
-export interface ToColorSchemeOptions {
-  isDark?: boolean
-  strategy?: Strategy
-}
+export function toColorScheme<S extends Strategy, V extends 'light' | 'dark' | never>(
+  theme: ColorSchemeSource,
+  options: { strategy?: S; variant?: V },
+) {
+  const { schemes, customColors = [] } = theme
+  const { strategy = 'active-only', variant = 'light' } = options
 
-export function toColorScheme(
-  source: ColorSchemeSource,
-  options: ToColorSchemeOptions = {},
-): Record<string, number> {
-  const { schemes, customColors = [] } = source
-  const { strategy = 'active-only', isDark = false } = options
+  const isDark = variant === 'dark'
 
   const currentScheme = isDark ? schemes.dark : schemes.light
   const customColorScheme = unpackCustomColorGroups(customColors, {
@@ -174,7 +137,7 @@ export function toColorScheme(
       return {
         ...unpackSchemeColors(currentScheme),
         ...customColorScheme,
-      }
+      } as ColorScheme<S, V> & Record<string, number>
 
     case 'active-with-opposite':
       return {
@@ -184,14 +147,14 @@ export function toColorScheme(
           isDark ? 'Light' : 'Dark',
         ),
         ...customColorScheme,
-      }
+      } as ColorScheme<S, V> & Record<string, number>
 
     case 'split-by-mode':
       return {
         ...unpackSchemeColors(schemes.light, 'Light'),
         ...unpackSchemeColors(schemes.dark, 'Dark'),
         ...customColorScheme,
-      }
+      } as ColorScheme<S, V> & Record<string, number>
 
     case 'all-variants':
       return {
@@ -199,7 +162,7 @@ export function toColorScheme(
         ...unpackSchemeColors(schemes.light, 'Light'),
         ...unpackSchemeColors(schemes.dark, 'Dark'),
         ...customColorScheme,
-      }
+      } as ColorScheme<S, V> & Record<string, number>
 
     default:
       throw new Error(`Invalid strategy: ${strategy}`)

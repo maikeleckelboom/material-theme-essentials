@@ -1,7 +1,6 @@
 import { Strategy, themeFromSeed } from './themeFromSeed'
 import { describe } from 'vitest'
 import { toColorScheme } from './toColorScheme'
-import { toColorScheme2 } from '../types/color-scheme'
 
 describe('toColorScheme', () => {
   it('should create a theme with a primary and custom color', async () => {
@@ -129,15 +128,50 @@ describe('toColorScheme', () => {
       ],
     })
 
-    const colorScheme = toColorScheme2(theme, {
+    const allVariantsColorScheme = toColorScheme(theme, {
       strategy: 'all-variants',
-      colorMode: 'light',
     })
 
-    console.log(colorScheme.primary, colorScheme.primaryDark, colorScheme.primaryLight)
-    // type should return (example): (strategy === 'active-with-opposite' && dark === false)
-    // ? { primary: 0, primaryDark: 0, ...rest }
-    // : { primary: 0, primaryLight: 0, ...rest }
+    console.log(
+      allVariantsColorScheme.primary,
+      allVariantsColorScheme.primaryDark,
+      allVariantsColorScheme.primaryLight,
+    )
+
+    const activeOnlyColorScheme = toColorScheme(theme, {
+      strategy: 'active-only',
+    })
+
+    console.log(
+      activeOnlyColorScheme.primary,
+      // Not type-hinted because the 'dark' key is not allowed
+      activeOnlyColorScheme.primaryDark,
+      // Not type-hinted because the 'light' key is not allowed
+      activeOnlyColorScheme.primaryLight,
+    )
+
+    const activeWithOppositeColorScheme = toColorScheme(theme, {
+      strategy: 'active-with-opposite',
+      variant: 'dark',
+    })
+
+    console.log(
+      activeWithOppositeColorScheme.primary,
+      activeWithOppositeColorScheme.primaryDark,
+      // Not type-hinted because the 'light' key is not expected
+      activeWithOppositeColorScheme.primaryLight,
+    )
+
+    const splitByModeColorScheme = toColorScheme(theme, {
+      strategy: 'split-by-mode',
+    })
+
+    console.log(
+      splitByModeColorScheme.primaryDark,
+      splitByModeColorScheme.primaryLight,
+      // Not type-hinted because the 'dark' key is not expected
+      splitByModeColorScheme.primary,
+    )
 
     expect(true).toBe(true)
   })
