@@ -6,7 +6,6 @@ import {
 } from '@material/material-color-utilities'
 import { createMaterialScheme, Variant } from './createMaterialScheme'
 import { resolveColorFromSeed } from './resolveColorFromSeed'
-import { generateColorScheme } from './generateColorScheme'
 
 export interface CorePaletteColors {
   primary?: number
@@ -16,7 +15,7 @@ export interface CorePaletteColors {
   neutralVariant?: number
 }
 
-export interface BaseMaterialSchemeOptions extends CorePaletteColors {
+export interface MaterialSchemeBaseOptions extends CorePaletteColors {
   variant?: Variant
   contrastLevel?: number
   isDark?: boolean
@@ -37,9 +36,9 @@ export type Seed =
   | ImageData
   | ImageBitmapSource
 
-export type MaterialSchemeOptions<TSeed extends Seed = number> =
-  | (BaseMaterialSchemeOptions & { primary: number; seed?: TSeed })
-  | (BaseMaterialSchemeOptions & { seed: TSeed; primary?: number })
+export type MaterialSchemeOptions =
+  | (MaterialSchemeBaseOptions & { primary: number; seed?: Seed })
+  | (MaterialSchemeBaseOptions & { seed: Seed; primary?: number })
 
 export interface StaticColor {
   name: string
@@ -47,7 +46,7 @@ export interface StaticColor {
   blend?: boolean
 }
 
-export type MaterialThemeOptions = MaterialSchemeOptions<Seed> & {
+export type MaterialThemeOptions = Omit<MaterialSchemeOptions, 'isDark'> & {
   staticColors?: StaticColor[]
 }
 
@@ -57,11 +56,10 @@ export type Strategy =
   | 'split-by-mode'
   | 'all-variants'
 
-interface ShallowMaterialTheme {
+export interface MaterialTheme {
   source: Seed
   contrastLevel: number
   variant: Variant
-  isDark: boolean
   schemes: {
     light: DynamicScheme
     dark: DynamicScheme
@@ -75,10 +73,6 @@ interface ShallowMaterialTheme {
     error: TonalPalette
   }
   customColors: CustomColorGroup[]
-}
-
-export interface MaterialTheme extends ShallowMaterialTheme {
-  toColorScheme: (strategy: Strategy) => Record<string, number>
 }
 
 function isMaterialThemeOptions(
@@ -104,7 +98,6 @@ export async function themeFromSeed(
     tertiary,
     neutral,
     neutralVariant,
-    isDark = false,
     contrastLevel = 0,
     variant = Variant.TONAL_SPOT,
     staticColors = [],
@@ -135,11 +128,10 @@ export async function themeFromSeed(
     error: lightScheme.errorPalette,
   }
 
-  const theme = {
+  return {
     source,
     contrastLevel,
     variant,
-    isDark,
     schemes: {
       light: lightScheme,
       dark: darkScheme,
@@ -158,10 +150,5 @@ export async function themeFromSeed(
         blend: !!color.blend,
       }),
     ),
-  }
-
-  return {
-    ...theme,
-    toColorScheme: (strategy: Strategy) => generateColorScheme(theme, strategy),
   }
 }

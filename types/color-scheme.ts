@@ -1,4 +1,7 @@
-export interface MaterialColorScheme {
+import { Strategy } from '../src/themeFromSeed'
+import { ColorSchemeSource } from '../src/toColorScheme'
+
+export interface BaseColorScheme {
   primaryPaletteKeyColor: number
   secondaryPaletteKeyColor: number
   tertiaryPaletteKeyColor: number
@@ -55,10 +58,6 @@ export interface MaterialColorScheme {
   onTertiaryFixedVariant: number
 }
 
-type Exact<T, U extends T = T> = U & {
-  [K in Exclude<keyof U, keyof T>]?: never
-}
-
 type AppendSuffix<T extends string, U extends string> = `${T}${U}`
 
 type AppendLight<T extends string> = AppendSuffix<T, 'Light'>
@@ -66,40 +65,43 @@ type AppendLight<T extends string> = AppendSuffix<T, 'Light'>
 type AppendDark<T extends string> = AppendSuffix<T, 'Dark'>
 
 export type ColorSchemeLight = {
-  [K in keyof MaterialColorScheme as AppendLight<K>]: number
+  [K in keyof BaseColorScheme as AppendLight<K>]: number
 }
 
 export type ColorSchemeDark = {
-  [K in keyof MaterialColorScheme as AppendDark<K>]: number
+  [K in keyof BaseColorScheme as AppendDark<K>]: number
 }
 
-export type ActiveWithOpposite<T extends 'light' | 'dark'> = T extends 'dark'
+export type OppositeColorScheme<T extends 'light' | 'dark'> = T extends 'dark'
   ? ColorSchemeDark
   : ColorSchemeLight
 
-type ColorSchemeStrategyMap<V extends 'light' | 'dark'> = {
-  'active-only': MaterialColorScheme
-  'active-with-opposite': MaterialColorScheme & ActiveWithOpposite<V>
+export type ColorSchemeStrategyMap<V extends 'light' | 'dark'> = {
+  'active-only': BaseColorScheme
+  'active-with-opposite': BaseColorScheme & OppositeColorScheme<V>
   'split-by-mode': ColorSchemeLight & ColorSchemeDark
-  'all-variants': MaterialColorScheme & ColorSchemeLight & ColorSchemeDark
+  'all-variants': BaseColorScheme & ColorSchemeLight & ColorSchemeDark
 }
 
-export type StrictColorScheme<
-  T extends keyof ColorSchemeStrategyMap<V>,
-  V extends 'light' | 'dark' = 'light',
+export type ColorScheme<
+  T extends Strategy,
+  V extends 'light' | 'dark' = 'light' | 'dark',
 > = ColorSchemeStrategyMap<V>[T]
 
-export type ColorScheme<
-  T extends keyof ColorSchemeStrategyMap<V>,
-  V extends 'light' | 'dark' = 'light',
-> = Partial<Exact<StrictColorScheme<T, V>>>
-
 // eslint-disable-next-line
-const testActiveWithOpposite: ColorScheme<'active-with-opposite', 'dark'> = {
+const testActiveWithOppositeDark: ColorScheme<'active-with-opposite', 'dark'> = {
   primary: 0,
   primaryDark: 0,
-  // @ts-expect-error given 'dark' mode, 'light' keys are not allowed
+  // @ts-expect-error given 'dark' variant, 'light' keys are not allowed
   primaryLight: 0,
+}
+
+// eslint-disable-next-line
+const testActiveWithOppositeLight: ColorScheme<'active-with-opposite', 'light'> = {
+  primary: 0,
+  primaryLight: 0,
+  // @ts-expect-error given 'light' variant, 'dark' keys are not allowed
+  primaryDark: 0,
 }
 
 // eslint-disable-next-line
@@ -117,14 +119,40 @@ const testActiveWithSplitByMode: ColorScheme<'split-by-mode'> = {
   primary: 0,
 }
 
-// type ExtractBaseKey<T> = T extends `${infer Base}Light` | `${infer Base}Dark` ? Base : T
-//
-// type ExampleExtractBaseKey = ExtractBaseKey<'primaryLight'> // 'primary'
-//
-// type ExtractSuffix<T> = T extends `${string}Light`
-//   ? 'Light'
-//   : T extends `${string}Dark`
-//     ? 'Dark'
-//     : T
-//
-// type ExampleExtractSuffix = ExtractSuffix<'primaryDark'> // 'Dark'
+export function toColorScheme2<S extends Strategy, V extends 'light' | 'dark' | never>(
+  theme: ColorSchemeSource,
+  options: { strategy: S; colorMode: V },
+): ColorScheme<S, V> {
+  const { strategy } = options
+
+  if (strategy === 'active-only') {
+    return {
+      primary: 0,
+      secondary: 0,
+    } as ColorScheme<'active-only'>
+  }
+
+  if (strategy === 'active-with-opposite') {
+    return {
+      primary: 0,
+      primaryLight: 0,
+    } as ColorScheme<'active-with-opposite', 'light'>
+  }
+
+  if (strategy === 'split-by-mode') {
+    return {
+      primaryDark: 0,
+      primaryLight: 0,
+    } as ColorScheme<'split-by-mode', 'dark' | 'light'>
+  }
+
+  if (strategy === 'all-variants') {
+    return {
+      primary: 0,
+      primaryDark: 0,
+      primaryLight: 0,
+    } as ColorScheme<'all-variants'>
+  }
+
+  throw new Error('Invalid strategy')
+}

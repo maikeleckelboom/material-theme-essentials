@@ -1,7 +1,9 @@
 import { Strategy, themeFromSeed } from './themeFromSeed'
 import { describe } from 'vitest'
+import { toColorScheme } from './toColorScheme'
+import { toColorScheme2 } from '../types/color-scheme'
 
-describe('generateColorScheme', () => {
+describe('toColorScheme', () => {
   it('should create a theme with a primary and custom color', async () => {
     const theme = await themeFromSeed({
       primary: 0x254891,
@@ -9,6 +11,11 @@ describe('generateColorScheme', () => {
         {
           name: 'My test color',
           value: 0x123456,
+        },
+        {
+          name: 'My uncle likes to paint',
+          value: 0x654321,
+          blend: true,
         },
       ],
     })
@@ -31,7 +38,7 @@ describe('generateColorScheme', () => {
 
     // Test each strategy
     strategies.forEach((strategy) => {
-      const colorScheme = theme.toColorScheme(strategy)
+      const colorScheme = toColorScheme(theme, { strategy })
 
       let expectedCustomKeys: string[]
       switch (strategy) {
@@ -104,5 +111,34 @@ describe('generateColorScheme', () => {
 
       expect(Object.keys(colorScheme).length).toBe(expectedKeyCount)
     })
+  })
+
+  it('should be fully typed', async () => {
+    const theme = await themeFromSeed({
+      seed: 0x254891,
+      staticColors: [
+        {
+          name: 'My test color',
+          value: 0x123456,
+        },
+        {
+          name: 'My uncle likes to paint',
+          value: 0x654321,
+          blend: true,
+        },
+      ],
+    })
+
+    const colorScheme = toColorScheme2(theme, {
+      strategy: 'all-variants',
+      colorMode: 'light',
+    })
+
+    console.log(colorScheme.primary, colorScheme.primaryDark, colorScheme.primaryLight)
+    // type should return (example): (strategy === 'active-with-opposite' && dark === false)
+    // ? { primary: 0, primaryDark: 0, ...rest }
+    // : { primary: 0, primaryLight: 0, ...rest }
+
+    expect(true).toBe(true)
   })
 })

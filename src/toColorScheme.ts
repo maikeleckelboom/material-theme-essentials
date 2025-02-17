@@ -6,7 +6,41 @@ import {
   MaterialDynamicColors,
 } from '@material/material-color-utilities'
 import { Strategy } from './themeFromSeed'
-import { ColorScheme } from '../types/color-scheme'
+import { BaseColorScheme } from '../types/color-scheme'
+
+// Helper types to transform the keys.
+// type AppendSuffix<T extends string, S extends string> = `${T}${S}`
+// type SuffixScheme<T, S extends string> = {
+//   [K in keyof T as K extends string ? AppendSuffix<K, S> : never]: T[K]
+// }
+
+// Overloads for unpackSchemeColors:
+// - When no suffix is provided, we return the BaseColorScheme as is.
+// - When a suffix is provided, each key is remapped with the suffix.
+// export function unpackSchemeColors(scheme: DynamicScheme): BaseColorScheme
+// export function unpackSchemeColors<S extends string>(
+//   scheme: DynamicScheme,
+//   suffix: S,
+// ): SuffixScheme<BaseColorScheme, S>
+
+// Implementation remains the same.
+// export function unpackSchemeColors<S extends string>(
+//   scheme: DynamicScheme,
+//   suffix?: S,
+// ): BaseColorScheme | SuffixScheme<BaseColorScheme, S> {
+//   const colors: Record<string, number> = {}
+//
+//   for (const [colorName, ColorClass] of Object.entries(MaterialDynamicColors)) {
+//     if (!(ColorClass instanceof DynamicColor)) continue
+//
+//     const resolvedColorName = `${colorName}${suffix ?? ''}`
+//     colors[resolvedColorName] = ColorClass.getArgb(scheme)
+//   }
+//
+//   // If no suffix was provided, we assume the keys already match BaseColorScheme.
+//   // Otherwise, we assert the mapped type.
+//   return colors as unknown as SuffixScheme<BaseColorScheme, string>
+// }
 
 export function unpackSchemeColors(scheme: DynamicScheme, suffix?: string) {
   const colors: Record<string, number> = {}
@@ -18,7 +52,7 @@ export function unpackSchemeColors(scheme: DynamicScheme, suffix?: string) {
     colors[resolvedColorName] = ColorClass.getArgb(scheme)
   }
 
-  return colors
+  return colors as unknown as BaseColorScheme
 }
 
 export function camelCase(str: string): string {
@@ -109,8 +143,7 @@ function unpackCustomColorGroups(
   )
 }
 
-export interface GenerateColorSchemeSource {
-  isDark: boolean
+export interface ColorSchemeSource {
   schemes: {
     light: DynamicScheme
     dark: DynamicScheme
@@ -118,45 +151,56 @@ export interface GenerateColorSchemeSource {
   customColors?: CustomColorGroup[]
 }
 
-export function generateColorScheme(
-  source: GenerateColorSchemeSource,
-  strategy: Strategy = 'active-only',
-): ColorScheme<
-  typeof strategy,
-  (typeof source)['isDark'] extends true ? 'dark' : 'light'
-> {
-  const { isDark = false } = source
-  const currentScheme = source.schemes[isDark ? 'dark' : 'light']
-  const altScheme = source.schemes[isDark ? 'light' : 'dark']
-  const altSuffix = isDark ? 'Light' : 'Dark'
+export interface ToColorSchemeOptions {
+  isDark?: boolean
+  strategy?: Strategy
+}
 
-  const customColors = unpackCustomColorGroups(source.customColors, { isDark, strategy })
+export function toColorScheme(
+  source: ColorSchemeSource,
+  options: ToColorSchemeOptions = {},
+): Record<string, number> {
+  const { schemes, customColors = [] } = source
+  const { strategy = 'active-only', isDark = false } = options
+
+  const currentScheme = isDark ? schemes.dark : schemes.light
+  const customColorScheme = unpackCustomColorGroups(customColors, {
+    isDark,
+    strategy,
+  })
 
   switch (strategy) {
     case 'active-only':
       return {
         ...unpackSchemeColors(currentScheme),
-        ...customColors,
-      } as ColorScheme<'active-only'>
+        ...customColorScheme,
+      }
+
     case 'active-with-opposite':
       return {
         ...unpackSchemeColors(currentScheme),
-        ...unpackSchemeColors(altScheme, altSuffix),
-        ...customColors,
-      } as ColorScheme<'active-with-opposite'>
+        ...unpackSchemeColors(
+          isDark ? schemes.light : schemes.dark,
+          isDark ? 'Light' : 'Dark',
+        ),
+        ...customColorScheme,
+      }
+
     case 'split-by-mode':
       return {
-        ...unpackSchemeColors(source.schemes.light, 'Light'),
-        ...unpackSchemeColors(source.schemes.dark, 'Dark'),
-        ...customColors,
-      } as ColorScheme<'split-by-mode'>
+        ...unpackSchemeColors(schemes.light, 'Light'),
+        ...unpackSchemeColors(schemes.dark, 'Dark'),
+        ...customColorScheme,
+      }
+
     case 'all-variants':
       return {
         ...unpackSchemeColors(currentScheme),
-        ...unpackSchemeColors(source.schemes.light, 'Light'),
-        ...unpackSchemeColors(source.schemes.dark, 'Dark'),
-        ...customColors,
-      } as ColorScheme<'all-variants'>
+        ...unpackSchemeColors(schemes.light, 'Light'),
+        ...unpackSchemeColors(schemes.dark, 'Dark'),
+        ...customColorScheme,
+      }
+
     default:
       throw new Error(`Invalid strategy: ${strategy}`)
   }
