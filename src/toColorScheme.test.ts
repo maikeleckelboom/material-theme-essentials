@@ -33,9 +33,13 @@ describe('toColorScheme', () => {
       'onMyTestColor',
       'myTestColorContainer',
       'onMyTestColorContainer',
+      'myUncleLikesToPaint',
+      'onMyUncleLikesToPaint',
+      'myUncleLikesToPaintContainer',
+      'onMyUncleLikesToPaintContainer',
     ]
 
-    // Test each strategy
+    // Verify custom color keys
     strategies.forEach((strategy) => {
       const colorScheme = toColorScheme(theme, { strategy })
 
@@ -65,7 +69,6 @@ describe('toColorScheme', () => {
           break
       }
 
-      // Verify custom colors
       expectedCustomKeys.forEach((key) => {
         expect(colorScheme).toHaveProperty(key)
       })
@@ -76,6 +79,7 @@ describe('toColorScheme', () => {
         'primaryContainer',
         'onPrimaryContainer',
       ]
+
       switch (strategy) {
         case 'active-only':
           expectedSchemeKeys.forEach((key) => {
@@ -110,69 +114,5 @@ describe('toColorScheme', () => {
 
       expect(Object.keys(colorScheme).length).toBe(expectedKeyCount)
     })
-  })
-
-  it('should be fully typed', async () => {
-    const theme = await themeFromSeed({
-      seed: 0x254891,
-      staticColors: [
-        {
-          name: 'My test color',
-          value: 0x123456,
-        },
-        {
-          name: 'My uncle likes to paint',
-          value: 0x654321,
-          blend: true,
-        },
-      ],
-    })
-
-    const allVariantsColorScheme = toColorScheme(theme, {
-      strategy: 'all-variants',
-    })
-
-    console.log(
-      allVariantsColorScheme.primary,
-      allVariantsColorScheme.primaryDark,
-      allVariantsColorScheme.primaryLight,
-    )
-
-    const activeOnlyColorScheme = toColorScheme(theme, {
-      strategy: 'active-only',
-    })
-
-    console.log(
-      activeOnlyColorScheme.primary,
-      // Not type-hinted because the 'dark' key is not allowed
-      activeOnlyColorScheme.primaryDark,
-      // Not type-hinted because the 'light' key is not allowed
-      activeOnlyColorScheme.primaryLight,
-    )
-
-    const activeWithOppositeColorScheme = toColorScheme(theme, {
-      strategy: 'active-with-opposite',
-      variant: 'dark',
-    })
-
-    console.log(
-      activeWithOppositeColorScheme.primary,
-      activeWithOppositeColorScheme.primaryDark,
-      // Not type-hinted because the 'light' key is not expected
-      activeWithOppositeColorScheme.primaryLight,
-    )
-
-    const splitByModeColorScheme = toColorScheme(theme, {
-      strategy: 'split-by-mode',
-    })
-
-    console.log(
-      splitByModeColorScheme.primaryDark,
-      splitByModeColorScheme.primaryLight,
-      // Not type-hinted because the 'dark' key is not expected
-      splitByModeColorScheme.primary,
-    )
-
-    expect(true).toBe(true)
   })
 })

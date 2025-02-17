@@ -3,11 +3,15 @@ import { score } from './score'
 import {
   createImageBitmapFromUrl,
   createImageDataFromSvg,
-  hexRegex,
-  urlOrPathRegex,
+  HEX_PATTERN,
+  PATH_PATTERN,
+  URL_PATTERN,
 } from './image'
 import { argbFromHex } from '@material/material-color-utilities'
 import type { Seed } from './themeFromSeed'
+
+const hexRegex = new RegExp(HEX_PATTERN, 'i')
+const urlOrPathRegex = new RegExp(`(?:${URL_PATTERN})|(?:${PATH_PATTERN})`, 'i')
 
 async function analyzeImageForDominantColor(
   bitmap: ImageBitmap,

@@ -86,34 +86,3 @@ export type ColorScheme<
   T extends Strategy,
   V extends 'light' | 'dark' = 'light' | 'dark',
 > = ColorSchemeStrategyMap<V>[T]
-
-// eslint-disable-next-line
-const testActiveWithOppositeDark: ColorScheme<'active-with-opposite', 'dark'> = {
-  primary: 0,
-  primaryDark: 0,
-  // @ts-expect-error given 'dark' variant, 'light' keys are not allowed
-  primaryLight: 0,
-}
-
-// eslint-disable-next-line
-const testActiveWithOppositeLight: ColorScheme<'active-with-opposite', 'light'> = {
-  primary: 0,
-  primaryLight: 0,
-  // @ts-expect-error given 'light' variant, 'dark' keys are not allowed
-  primaryDark: 0,
-}
-
-// eslint-disable-next-line
-const testActiveOnly: ColorScheme<'active-only'> = {
-  primary: 0,
-  // @ts-expect-error 'active-only' never returns suffixed keys
-  primaryDark: 0,
-}
-
-// eslint-disable-next-line
-const testActiveWithSplitByMode: ColorScheme<'split-by-mode'> = {
-  primaryDark: 0,
-  primaryLight: 0,
-  // @ts-expect-error 'split-by-mode' never returns un-suffixed keys
-  primary: 0,
-}

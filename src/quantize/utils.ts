@@ -1,10 +1,27 @@
-import { createQuantizeWorker } from './index'
-import { QuantizeWorkerOptions, QuantizeWorkerResult } from './types'
-import { isDoneEvent } from './guards'
+import type {
+  QuantizeWorkerDoneEvent,
+  QuantizeWorkerEvent,
+  QuantizeWorkerOptions,
+  QuantizeWorkerResult,
+  QuantizeWorkerStartEvent,
+} from './types'
 import { QuantizerCelebi } from '@material/material-color-utilities'
+import { QuantizeWorker } from './worker'
+
+export function createQuantizeWorker(): QuantizeWorker {
+  return new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' })
+}
 
 export function quantize(pixels: number[], maxColors: number = 200): Map<number, number> {
   return QuantizerCelebi.quantize(pixels, maxColors)
+}
+
+export function isStartEvent(event: QuantizeWorkerEvent): event is QuantizeWorkerStartEvent {
+  return event.data.type === 'start'
+}
+
+export function isDoneEvent(event: QuantizeWorkerEvent): event is QuantizeWorkerDoneEvent {
+  return event.data.type === 'done'
 }
 
 export async function quantizeWorker(

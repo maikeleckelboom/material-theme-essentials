@@ -1,9 +1,7 @@
 import { argbFromRgb } from '@material/material-color-utilities'
-import { HEX_PATTERN, URL_PATTERN, PATH_PATTERN } from './patterns'
-
-export const hexRegex = new RegExp(HEX_PATTERN, 'i')
-export const pathRegex = new RegExp(PATH_PATTERN, 'i')
-export const urlOrPathRegex = new RegExp(`(?:${URL_PATTERN})|(?:${PATH_PATTERN})`, 'i')
+export const HEX_PATTERN = '^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$'
+export const URL_PATTERN = '^(https?:\\/\\/|data:image|file:|\\\\\\\\)'
+export const PATH_PATTERN = '^(?!$)(?:(?:\\.\\.\\/)+|\\.\\/|\\/|)(?:[^/]+\\/?)*[^/]*$'
 
 function createCanvasContext(
   width: number,
@@ -60,6 +58,7 @@ export async function createImageBitmapFromUrl(
   signal?: AbortSignal,
 ): Promise<ImageBitmap> {
   if (!createImageBitmap) throw new Error('createImageBitmap API unavailable')
+  const pathRegex = new RegExp(PATH_PATTERN, 'i')
   const resolvedUrl = pathRegex.test(url) ? new URL(url, location.href).href : url
   const response = await fetch(resolvedUrl, { signal, mode: 'cors' })
   const blob = await response.blob()

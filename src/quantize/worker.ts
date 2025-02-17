@@ -1,7 +1,11 @@
-import { isStartEvent } from './guards'
-import type { QuantizeWorkerEvent } from './types'
+import { isStartEvent } from './index'
+import type { QuantizeWorkerData, QuantizeWorkerEvent } from './types'
 import { createImageDataFromBitmap, pixelsFromImageData } from '../image'
 import { quantize } from './utils'
+
+export type QuantizeWorker = Omit<Worker, 'postMessage'> & {
+  postMessage(message: QuantizeWorkerData, transfer?: Transferable[]): void
+}
 
 async function onMessage(event: QuantizeWorkerEvent) {
   if (!isStartEvent(event)) return

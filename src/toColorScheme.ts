@@ -6,7 +6,7 @@ import {
   MaterialDynamicColors,
 } from '@material/material-color-utilities'
 import { Strategy } from './themeFromSeed'
-import { ColorScheme } from '../types/color-scheme'
+import { ColorScheme } from '../types/colorScheme'
 
 export function unpackSchemeColors(scheme: DynamicScheme, suffix?: string) {
   const colors: Record<string, number> = {}
@@ -109,7 +109,11 @@ export function unpackCustomColorGroups(
   )
 }
 
-export interface ColorSchemeSource {
+export function assertNever(x: never): never {
+  throw new Error(`Unexpected strategy: ${x}`)
+}
+
+export interface ToColorSchemeTheme {
   schemes: {
     light: DynamicScheme
     dark: DynamicScheme
@@ -117,16 +121,17 @@ export interface ColorSchemeSource {
   customColors?: CustomColorGroup[]
 }
 
-export function toColorScheme<S extends Strategy, V extends 'light' | 'dark' | never>(
-  theme: ColorSchemeSource,
+export function toColorScheme<S extends Strategy, V extends 'light' | 'dark'>(
+  theme: ToColorSchemeTheme,
   options: { strategy?: S; variant?: V },
-) {
+): ColorScheme<S, V> & Record<string, number> {
   const { schemes, customColors = [] } = theme
   const { strategy = 'active-only', variant = 'light' } = options
 
   const isDark = variant === 'dark'
 
   const currentScheme = isDark ? schemes.dark : schemes.light
+
   const customColorScheme = unpackCustomColorGroups(customColors, {
     isDark,
     strategy,
@@ -165,6 +170,6 @@ export function toColorScheme<S extends Strategy, V extends 'light' | 'dark' | n
       } as ColorScheme<S, V> & Record<string, number>
 
     default:
-      throw new Error(`Invalid strategy: ${strategy}`)
+      return assertNever(strategy)
   }
 }
