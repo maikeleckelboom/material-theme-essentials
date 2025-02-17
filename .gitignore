@@ -5,9 +5,9 @@ node_modules/
 dist/
 
 # Test files and coverage
-test/
-coverage/
-.vitest/
+#test/
+#coverage/
+#.vitest/
 
 # Environment variables
 .env

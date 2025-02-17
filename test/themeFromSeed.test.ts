@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { themeFromSeed } from './themeFromSeed'
+import { themeFromSeed } from '../src/themeFromSeed'
 
 beforeAll(async () => {})
 

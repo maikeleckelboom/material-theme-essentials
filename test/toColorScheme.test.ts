@@ -1,6 +1,6 @@
-import { Strategy, themeFromSeed } from './themeFromSeed'
+import { Strategy, themeFromSeed } from '../src/themeFromSeed'
 import { describe } from 'vitest'
-import { toColorScheme } from './toColorScheme'
+import { toColorScheme } from '../src/toColorScheme'
 
 describe('toColorScheme', () => {
   it('should create a theme with a primary and custom color', async () => {

@@ -1,5 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { resolveColorFromSeed } from './resolveColorFromSeed'
+import { resolveColorFromSeed } from '../src/resolveColorFromSeed'
 import { argbFromHex } from '@material/material-color-utilities'
 
 const IMAGE_PATH: string = '../../../assets/wallpaper-small.webp'
