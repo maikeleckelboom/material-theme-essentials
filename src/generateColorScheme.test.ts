@@ -1,20 +1,26 @@
-import { themeFromSeed } from './themeFromSeed'
+import { Strategy, themeFromSeed } from './themeFromSeed'
 import { describe } from 'vitest'
 
-describe('resolveColorScheme', () => {
+describe('generateColorScheme', () => {
   it('should create a theme with a primary and custom color', async () => {
     const theme = await themeFromSeed({
       primary: 0x254891,
       staticColors: [
         {
-          name: 'My test color',
+          name: 'my Test Color',
+          // name: 'm¥ t€§† cØlØ®\n',
           value: 0x123456,
         },
       ],
     })
 
     // Test matrix for different strategies
-    const strategies = ['current-only', 'alternate', 'split', 'combined'] as const
+    const strategies: Strategy[] = [
+      'active-only',
+      'active-with-opposite',
+      'split-by-mode',
+      'all-variants',
+    ]
 
     // Common color key expectations
     const customColorKeys = [
@@ -28,66 +34,69 @@ describe('resolveColorScheme', () => {
     strategies.forEach((strategy) => {
       const colorScheme = theme.toColorScheme(strategy)
 
-      // Expected scheme color keys based on strategy
-      const expectedSchemeKeys = [
-        'primary',
-        'onPrimary',
-        'primaryContainer',
-        'onPrimaryContainer',
-      ]
-
-      // Expected custom color keys based on strategy
       let expectedCustomKeys: string[]
       switch (strategy) {
-        case 'current-only':
+        case 'active-only':
           expectedCustomKeys = customColorKeys
           break
-        case 'alternate':
+        case 'active-with-opposite':
           expectedCustomKeys = [
             ...customColorKeys,
             ...customColorKeys.map((key) => `${key}Dark`),
           ]
           break
-        case 'split':
+        case 'split-by-mode':
           expectedCustomKeys = [
             ...customColorKeys.map((key) => `${key}Light`),
             ...customColorKeys.map((key) => `${key}Dark`),
           ]
           break
-        case 'combined':
+        case 'all-variants':
           expectedCustomKeys = [
             ...customColorKeys,
             ...customColorKeys.map((key) => `${key}Light`),
             ...customColorKeys.map((key) => `${key}Dark`),
           ]
           break
-      }
-
-      // Verify scheme colors
-      switch (strategy) {
-        case 'split':
-          expectedSchemeKeys.forEach((key) => {
-            expect(colorScheme).toHaveProperty(`${key}Light`)
-            expect(colorScheme).toHaveProperty(`${key}Dark`)
-          })
-          break
-        case 'combined':
-          expectedSchemeKeys.forEach((key) => {
-            expect(colorScheme).toHaveProperty(key)
-            expect(colorScheme).toHaveProperty(`${key}Light`)
-            expect(colorScheme).toHaveProperty(`${key}Dark`)
-          })
-          break
-        default:
-          expectedSchemeKeys.forEach((key) => {
-            expect(colorScheme).toHaveProperty(key)
-          })
       }
 
       // Verify custom colors
       expectedCustomKeys.forEach((key) => {
         expect(colorScheme).toHaveProperty(key)
       })
+
+      const expectedSchemeKeys = [
+        'primary',
+        'onPrimary',
+        'primaryContainer',
+        'onPrimaryContainer',
+      ]
+      switch (strategy) {
+        case 'active-only':
+          expectedSchemeKeys.forEach((key) => {
+            expect(colorScheme).toHaveProperty(key)
+          })
+          break
+        case 'active-with-opposite':
+          expectedSchemeKeys.forEach((key) => {
+            expect(colorScheme).toHaveProperty(key)
+            expect(colorScheme).toHaveProperty(`${key}Dark`)
+          })
+          break
+        case 'split-by-mode':
+          expectedSchemeKeys.forEach((key) => {
+            expect(colorScheme).toHaveProperty(`${key}Light`)
+            expect(colorScheme).toHaveProperty(`${key}Dark`)
+          })
+          break
+        case 'all-variants':
+          expectedSchemeKeys.forEach((key) => {
+            expect(colorScheme).toHaveProperty(key)
+            expect(colorScheme).toHaveProperty(`${key}Light`)
+            expect(colorScheme).toHaveProperty(`${key}Dark`)
+          })
+          break
+      }
 
       // Verify total key count matches expectations
       const expectedKeyCount = Object.keys(colorScheme).filter(

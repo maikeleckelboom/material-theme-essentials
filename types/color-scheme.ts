@@ -55,6 +55,29 @@ export interface MaterialColorScheme {
   onTertiaryFixedVariant: number
 }
 
-export type ColorScheme = Record<keyof MaterialColorScheme | string, number> & {
-  [key: string]: number
+type AppendSuffix<T extends string, U extends string> = `${T}${U}`
+
+type AppendLight<T extends string> = AppendSuffix<T, 'Light'>
+type AppendDark<T extends string> = AppendSuffix<T, 'Dark'>
+
+type ColorSchemeLight = {
+  [K in keyof MaterialColorScheme as AppendLight<K>]: number
 }
+
+type ColorSchemeDark = {
+  [K in keyof MaterialColorScheme as AppendDark<K>]: number
+}
+
+type ColorSchemeAllVariants = MaterialColorScheme & ColorSchemeLight & ColorSchemeDark
+
+export type ColorSchemeStrategyMap = {
+  'active-only': MaterialColorScheme
+  'active-with-opposite': MaterialColorScheme & ColorSchemeDark
+  'split-by-mode': ColorSchemeAllVariants
+  'all-variants': ColorSchemeAllVariants
+}
+
+export type ColorScheme<T extends keyof ColorSchemeStrategyMap> =
+  ColorSchemeStrategyMap[T] & {
+    [key: string]: number
+  }

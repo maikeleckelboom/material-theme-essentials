@@ -6,7 +6,7 @@ import {
 } from '@material/material-color-utilities'
 import { createMaterialScheme, Variant } from './createMaterialScheme'
 import { resolveColorFromSeed } from './resolveColorFromSeed'
-import { resolveColorScheme } from './resolveColorScheme'
+import { generateColorScheme } from './generateColorScheme'
 
 export interface CorePaletteColors {
   primary?: number
@@ -51,7 +51,11 @@ export type MaterialThemeOptions = MaterialSchemeOptions<Seed> & {
   staticColors?: StaticColor[]
 }
 
-export type UnpackStrategy = 'current-only' | 'split' | 'alternate' | 'combined'
+export type Strategy =
+  | 'active-only'
+  | 'active-with-opposite'
+  | 'split-by-mode'
+  | 'all-variants'
 
 interface ShallowMaterialTheme {
   source: Seed
@@ -74,7 +78,7 @@ interface ShallowMaterialTheme {
 }
 
 export interface MaterialTheme extends ShallowMaterialTheme {
-  toColorScheme: (strategy: UnpackStrategy) => Record<string, number>
+  toColorScheme: (strategy: Strategy) => Record<string, number>
 }
 
 function isMaterialThemeOptions(
@@ -158,6 +162,6 @@ export async function themeFromSeed(
 
   return {
     ...theme,
-    toColorScheme: (strategy: UnpackStrategy) => resolveColorScheme(theme, strategy),
+    toColorScheme: (strategy: Strategy) => generateColorScheme(theme, strategy),
   }
 }
