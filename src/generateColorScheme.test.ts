@@ -7,8 +7,7 @@ describe('generateColorScheme', () => {
       primary: 0x254891,
       staticColors: [
         {
-          name: 'my Test Color',
-          // name: 'm¥ t€§† cØlØ®\n',
+          name: 'My test color',
           value: 0x123456,
         },
       ],

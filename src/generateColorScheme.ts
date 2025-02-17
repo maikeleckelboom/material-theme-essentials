@@ -60,7 +60,7 @@ export function processColorGroup(
   )
 }
 
-export function unpackCustomColors(
+export function unpackCustomColorGroup(
   colorGroup: CustomColorGroup,
   options: { isDark?: boolean; strategy?: Strategy } = {},
 ): Record<string, number> {
@@ -101,27 +101,30 @@ function unpackCustomColorGroups(
   options: { isDark?: boolean; strategy?: Strategy } = {},
 ): Record<string, number> {
   return (customColors || []).reduce(
-    (acc, customColor) => ({
+    (acc, customColorGroup) => ({
       ...acc,
-      ...unpackCustomColors(customColor, options),
+      ...unpackCustomColorGroup(customColorGroup, options),
     }),
     {},
   )
 }
 
 export interface GenerateColorSchemeSource {
+  isDark: boolean
   schemes: {
     light: DynamicScheme
     dark: DynamicScheme
   }
   customColors?: CustomColorGroup[]
-  isDark?: boolean
 }
 
 export function generateColorScheme(
   source: GenerateColorSchemeSource,
   strategy: Strategy = 'active-only',
-): ColorScheme<typeof strategy> {
+): ColorScheme<
+  typeof strategy,
+  (typeof source)['isDark'] extends true ? 'dark' : 'light'
+> {
   const { isDark = false } = source
   const currentScheme = source.schemes[isDark ? 'dark' : 'light']
   const altScheme = source.schemes[isDark ? 'light' : 'dark']
