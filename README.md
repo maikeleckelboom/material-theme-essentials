@@ -64,18 +64,19 @@ Create complete color schemes with different generation strategies:
 import { themeFromSeed, toColorScheme, Strategy } from 'material-theme-essentials'
 
 // Create theme
-const theme = await themeFromSeed('https://example.com/image.jpg', {
+const theme = await themeFromSeed({
+  seed: 'https://example.com/image.jpg', 
   primary: 0xff00ff,
   secondary: '#00ff00',
   tertiary: 0x0000ff,
   staticColors: [
-    { name: 'accent', value: '#ff0000' },
-    { name: 'background', value: 0x000000, blend: true }
+    { name: 'exit-color', value: '#ff0000' },
+    { name: 'just a normal color name', value: 0x000000, blend: true }
   ]
 })
 
 // Or pass a seed object directly
-const theme2 = await themeFromSeed(0x254891)
+// const theme = await themeFromSeed('https://example.com/image.jpg')
 ```
 
 ## API Reference
@@ -84,19 +85,19 @@ const theme2 = await themeFromSeed(0x254891)
 
 __Converts a seed value to an ARGB color value.__
 
-* Supported seed types:
-* Numeric color values
-* Hex color strings
-* Image URLs
-* Local file paths (Node.js)
-* Blobs
-* ImageBitmaps
-* ImageData
-* HTMLImageElements
-* HTMLVideoElements
-* VideoFrames
-* SVG elements
-* Canvas elements (both HTML and Offscreen)
+Supported seed types:
+  * Numeric color value
+  * Hex color string
+  * Image URL
+  * Local file path
+  * Blob
+  * ImageBitmap
+  * ImageData
+  * HTMLImageElement
+  * HTMLVideoElement
+  * SVGElement
+  * VideoFrame
+  * CanvasElement (both HTML and Offscreen)
 
 ---
 
