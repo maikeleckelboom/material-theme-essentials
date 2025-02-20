@@ -6,7 +6,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: './src/index.ts',
-      name: 'MaterialColorExtensions',
+      name: 'MaterialThemeEssentials',
       fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
       formats: ['es', 'cjs'],
     },
@@ -17,7 +17,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '~': path.resolve(__dirname, './src'),
+      '~~': path.resolve(__dirname, './'),
     },
   },
   plugins: [

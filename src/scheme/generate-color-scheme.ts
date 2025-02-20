@@ -5,10 +5,10 @@ import {
   DynamicScheme,
   MaterialDynamicColors,
 } from '@material/material-color-utilities'
-import { Strategy } from './themeFromSeed'
-import { ColorScheme } from '../types/colorScheme'
+import { Strategy } from './seed-theme'
+import { ColorScheme } from '../types'
 
-export function unpackSchemeColors(scheme: DynamicScheme, suffix?: string) {
+export function processSchemeColors(scheme: DynamicScheme, suffix?: string) {
   const colors: Record<string, number> = {}
 
   for (const [colorName, ColorClass] of Object.entries(MaterialDynamicColors)) {
@@ -60,7 +60,7 @@ export function processColorGroup(
   )
 }
 
-export function unpackCustomColorGroup(
+export function processCustomColorGroup(
   colorGroup: CustomColorGroup,
   options: { isDark?: boolean; strategy?: Strategy } = {},
 ): Record<string, number> {
@@ -96,33 +96,27 @@ export function unpackCustomColorGroup(
   }
 }
 
-export function unpackCustomColorGroups(
+export function processCustomColorGroups(
   customColors?: CustomColorGroup[],
   options: { isDark?: boolean; strategy?: Strategy } = {},
 ): Record<string, number> {
   return (customColors || []).reduce(
     (acc, customColorGroup) => ({
       ...acc,
-      ...unpackCustomColorGroup(customColorGroup, options),
+      ...processCustomColorGroup(customColorGroup, options),
     }),
     {},
   )
 }
 
-export function assertNever(x: never): never {
-  throw new Error(`Unexpected strategy: ${x}`)
-}
-
-export interface ToColorSchemeTheme {
-  schemes: {
-    light: DynamicScheme
-    dark: DynamicScheme
-  }
-  customColors?: CustomColorGroup[]
-}
-
-export function toColorScheme<S extends Strategy, V extends 'light' | 'dark'>(
-  theme: ToColorSchemeTheme,
+export function generateColorScheme<S extends Strategy, V extends 'light' | 'dark'>(
+  theme: {
+    schemes: {
+      light: DynamicScheme
+      dark: DynamicScheme
+    }
+    customColors?: CustomColorGroup[]
+  },
   options: { strategy?: S; variant?: V },
 ): ColorScheme<S, V> & Record<string, number> {
   const { schemes, customColors = [] } = theme
@@ -132,7 +126,7 @@ export function toColorScheme<S extends Strategy, V extends 'light' | 'dark'>(
 
   const currentScheme = isDark ? schemes.dark : schemes.light
 
-  const customColorScheme = unpackCustomColorGroups(customColors, {
+  const customColorScheme = processCustomColorGroups(customColors, {
     isDark,
     strategy,
   })
@@ -140,14 +134,14 @@ export function toColorScheme<S extends Strategy, V extends 'light' | 'dark'>(
   switch (strategy) {
     case 'active-only':
       return {
-        ...unpackSchemeColors(currentScheme),
+        ...processSchemeColors(currentScheme),
         ...customColorScheme,
       } as ColorScheme<S, V> & Record<string, number>
 
     case 'active-with-opposite':
       return {
-        ...unpackSchemeColors(currentScheme),
-        ...unpackSchemeColors(
+        ...processSchemeColors(currentScheme),
+        ...processSchemeColors(
           isDark ? schemes.light : schemes.dark,
           isDark ? 'Light' : 'Dark',
         ),
@@ -156,20 +150,24 @@ export function toColorScheme<S extends Strategy, V extends 'light' | 'dark'>(
 
     case 'split-by-mode':
       return {
-        ...unpackSchemeColors(schemes.light, 'Light'),
-        ...unpackSchemeColors(schemes.dark, 'Dark'),
+        ...processSchemeColors(schemes.light, 'Light'),
+        ...processSchemeColors(schemes.dark, 'Dark'),
         ...customColorScheme,
       } as ColorScheme<S, V> & Record<string, number>
 
     case 'all-variants':
       return {
-        ...unpackSchemeColors(currentScheme),
-        ...unpackSchemeColors(schemes.light, 'Light'),
-        ...unpackSchemeColors(schemes.dark, 'Dark'),
+        ...processSchemeColors(currentScheme),
+        ...processSchemeColors(schemes.light, 'Light'),
+        ...processSchemeColors(schemes.dark, 'Dark'),
         ...customColorScheme,
       } as ColorScheme<S, V> & Record<string, number>
 
     default:
       return assertNever(strategy)
   }
+}
+
+function assertNever(x: never): never {
+  throw new Error(`Unexpected strategy: ${x}`)
 }

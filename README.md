@@ -17,54 +17,51 @@ and color scheme transformations.
 ```bash
 npm install @material/material-color-utilities material-theme-essentials
 ```
-
-## NOT READY FOR USE - WORK IN PROGRESS - DO NOT USE YET
-
 ---
 
-## resolveColorFromSeed
+## resolveColor
 
 Convert the seed value to a color value:
 
 ```ts
-import { resolveColorFromSeed, argbFromHex } from 'material-theme-essentials'
+import { resolveColor, argbFromHex } from 'material-theme-essentials'
 
 // Numeric color
-const numericColor = await resolveColorFromSeed(0xff00ff)
+const numericColor = await resolveColor(0xff00ff)
 
 // Hex string
-const hexColor = await resolveColorFromSeed('#ff00ff')
+const hexColor = await resolveColor('#ff00ff')
 
 // Image URL
-const imageColor = await resolveColorFromSeed('https://example.com/image.jpg')
+const imageColor = await resolveColor('https://example.com/image.jpg')
 
 // SVG element
 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
 // ... draw on SVG ...
-const svgColor = await resolveColorFromSeed(svg)
+const svgColor = await resolveColor(svg)
 
 // Canvas element
 const canvas = document.createElement('canvas')
 // ... draw on canvas ...
-const canvasColor = await resolveColorFromSeed(canvas)
+const canvasColor = await resolveColor(canvas)
 
 // Video frame
 const video = document.createElement('video')
 video.src = 'https://example.com/video.mp4'
 video.onloadeddata = async () => {
-  const videoColor = await resolveColorFromSeed(video)
+  const videoColor = await resolveColor(video)
 }
 ```
 
-## themeFromSeed & toColorScheme
+## seedTheme & toColorScheme
 
 Create complete color schemes with different generation strategies:
 
 ```ts
-import { themeFromSeed, toColorScheme, Strategy } from 'material-theme-essentials'
+import { seedTheme, toColorScheme, Strategy } from 'material-theme-essentials'
 
 // Create theme
-const theme = await themeFromSeed('https://example.com/image.jpg', {
+const theme = await seedTheme('https://example.com/image.jpg', {
   primary: 0xff00ff,
   secondary: '#00ff00',
   tertiary: 0x0000ff,
@@ -75,32 +72,33 @@ const theme = await themeFromSeed('https://example.com/image.jpg', {
 })
 
 // Or pass a seed object directly
-const theme2 = await themeFromSeed(0x254891)
+// const theme = await seedTheme('https://example.com/image.jpg')
 ```
 
 ## API Reference
 
-### resolveColorFromSeed(seed: Seed): Promise<Color>
+### resolveColor(seed: Seed): Promise<Color>
 
 __Converts a seed value to an ARGB color value.__
 
-* Supported seed types:
-* Numeric color values
-* Hex color strings
-* Image URLs
-* Local file paths (Node.js)
-* Blobs
-* ImageBitmaps
-* ImageData
-* HTMLImageElements
-* HTMLVideoElements
-* VideoFrames
-* SVG elements
-* Canvas elements (both HTML and Offscreen)
+Supported seed types:
+  * Numeric color value
+  * Hex color string
+  * Image URL
+  * Local file path
+  * Blob
+  * HTMLImageElement
+  * HTMLVideoElement
+  * VideoFrame
+  * SVG element
+  * HTMLCanvasElement
+  * OffscreenCanvas
+  * ImageData
+  * ImageBitmap
 
 ---
 
-### themeFromSeed(seed: ThemeSeed): Promise<Theme>
+### seedTheme(seed: ThemeSeed): Promise<Theme>
 
 __Generates a base theme from a seed object.__
 
@@ -140,6 +138,8 @@ const scheme = toColorScheme(theme, {
 
 ## TypeScript Reference
 ```ts
+import type { Strategy } from 'material-theme-essentials'
+
 export interface BaseColorScheme {
   primaryPaletteKeyColor: number
   secondaryPaletteKeyColor: number
@@ -197,18 +197,12 @@ export interface BaseColorScheme {
   onTertiaryFixedVariant: number
 }
 
-type AppendSuffix<T extends string, U extends string> = `${T}${U}`
-
-type AppendLight<T extends string> = AppendSuffix<T, 'Light'>
-
-type AppendDark<T extends string> = AppendSuffix<T, 'Dark'>
-
 export type ColorSchemeLight = {
-  [K in keyof BaseColorScheme as AppendLight<K>]: number
+  [K in keyof BaseColorScheme as `${K}Light`]: number
 }
 
 export type ColorSchemeDark = {
-  [K in keyof BaseColorScheme as AppendDark<K>]: number
+  [K in keyof BaseColorScheme as `${K}Dark`]: number
 }
 
 export type OppositeColorScheme<T extends 'light' | 'dark'> = T extends 'dark'
@@ -226,7 +220,6 @@ export type ColorScheme<
   T extends Strategy,
   V extends 'light' | 'dark' = 'light' | 'dark',
 > = ColorSchemeStrategyMap<V>[T]
-
 ```
 
 ---

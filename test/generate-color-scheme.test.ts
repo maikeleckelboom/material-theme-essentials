@@ -1,47 +1,52 @@
-import { Strategy, themeFromSeed } from '../src/themeFromSeed'
-import { describe } from 'vitest'
-import { toColorScheme } from '../src/toColorScheme'
+import { Strategy, themeFromSeed } from '../src/scheme/seed-theme'
+import { describe, it, expect, beforeEach } from 'vitest'
+import { generateColorScheme } from '../src/scheme/generate-color-scheme'
+import { argbFromHex } from '@material/material-color-utilities'
 
-describe('toColorScheme', () => {
-  it('should create a theme with a primary and custom color', async () => {
-    const theme = await themeFromSeed({
-      primary: 0x254891,
-      staticColors: [
-        {
-          name: 'My test color',
-          value: 0x123456,
-        },
-        {
-          name: 'My uncle likes to paint',
-          value: 0x654321,
-          blend: true,
-        },
-      ],
+describe('generateColorScheme', () => {
+  const primaryColor = argbFromHex('#4588dc')
+  const staticColors = [
+    {
+      name: 'My test color',
+      value: argbFromHex('#123456'),
+    },
+    {
+      name: 'My uncle likes to paint',
+      value: argbFromHex('#b3b974'),
+      blend: true,
+    },
+  ]
+
+  const strategies: Strategy[] = [
+    'active-only',
+    'active-with-opposite',
+    'split-by-mode',
+    'all-variants',
+  ]
+
+  const customColorKeys = [
+    'myTestColor',
+    'onMyTestColor',
+    'myTestColorContainer',
+    'onMyTestColorContainer',
+    'myUncleLikesToPaint',
+    'onMyUncleLikesToPaint',
+    'myUncleLikesToPaintContainer',
+    'onMyUncleLikesToPaintContainer',
+  ]
+
+  let theme: Awaited<ReturnType<typeof themeFromSeed>>
+
+  beforeEach(async () => {
+    theme = await themeFromSeed({
+      primary: primaryColor,
+      staticColors,
     })
+  })
 
-    // Test matrix for different strategies
-    const strategies: Strategy[] = [
-      'active-only',
-      'active-with-opposite',
-      'split-by-mode',
-      'all-variants',
-    ]
-
-    // Common color key expectations
-    const customColorKeys = [
-      'myTestColor',
-      'onMyTestColor',
-      'myTestColorContainer',
-      'onMyTestColorContainer',
-      'myUncleLikesToPaint',
-      'onMyUncleLikesToPaint',
-      'myUncleLikesToPaintContainer',
-      'onMyUncleLikesToPaintContainer',
-    ]
-
-    // Verify custom color keys
-    strategies.forEach((strategy) => {
-      const colorScheme = toColorScheme(theme, { strategy })
+  strategies.forEach((strategy) => {
+    it(`should create a color scheme with strategy: ${strategy}`, () => {
+      const colorScheme = generateColorScheme(theme, { strategy })
 
       let expectedCustomKeys: string[]
       switch (strategy) {
@@ -107,12 +112,38 @@ describe('toColorScheme', () => {
           break
       }
 
-      // Verify total key count matches expectations
       const expectedKeyCount = Object.keys(colorScheme).filter(
         (key) => key in colorScheme,
       ).length
 
       expect(Object.keys(colorScheme).length).toBe(expectedKeyCount)
     })
+  })
+
+  it('should handle invalid color values', async () => {
+    theme = await themeFromSeed({
+      primary: primaryColor,
+      staticColors: [
+        {
+          name: 'Invalid color',
+          value: argbFromHex('#ZZZZZZ'),
+        },
+      ],
+    })
+    const colorScheme = generateColorScheme(theme, { strategy: 'active-only' })
+    expect(colorScheme).toHaveProperty('primary')
+  })
+
+  it('should handle large number of static colors', async () => {
+    const largeStaticColors = Array.from({ length: 100 }, (_, i) => ({
+      name: `Color ${i}`,
+      value: argbFromHex('#123456'),
+    }))
+    theme = await themeFromSeed({
+      primary: primaryColor,
+      staticColors: largeStaticColors,
+    })
+    const colorScheme = generateColorScheme(theme, { strategy: 'active-only' })
+    expect(colorScheme).toHaveProperty('primary')
   })
 })

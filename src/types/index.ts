@@ -1,6 +1,12 @@
-import { Strategy } from '../src/themeFromSeed'
+import { Strategy } from '../scheme/seed-theme'
+import { Variant } from '../scheme/create-dynamic-scheme'
+import {
+  CustomColorGroup,
+  DynamicScheme,
+  TonalPalette,
+} from '@material/material-color-utilities'
 
-export interface BaseColorScheme {
+export interface MaterialColorScheme {
   primaryPaletteKeyColor: number
   secondaryPaletteKeyColor: number
   tertiaryPaletteKeyColor: number
@@ -57,32 +63,45 @@ export interface BaseColorScheme {
   onTertiaryFixedVariant: number
 }
 
-type AppendSuffix<T extends string, U extends string> = `${T}${U}`
-
-type AppendLight<T extends string> = AppendSuffix<T, 'Light'>
-
-type AppendDark<T extends string> = AppendSuffix<T, 'Dark'>
-
 export type ColorSchemeLight = {
-  [K in keyof BaseColorScheme as AppendLight<K>]: number
+  [K in keyof MaterialColorScheme as `${K}Light`]: number
 }
 
 export type ColorSchemeDark = {
-  [K in keyof BaseColorScheme as AppendDark<K>]: number
+  [K in keyof MaterialColorScheme as `${K}Dark`]: number
 }
 
-export type OppositeColorScheme<T extends 'light' | 'dark'> = T extends 'dark'
+export type ColorSchemeOpposite<T extends 'light' | 'dark'> = T extends 'dark'
   ? ColorSchemeDark
   : ColorSchemeLight
 
 export type ColorSchemeStrategyMap<V extends 'light' | 'dark'> = {
-  'active-only': BaseColorScheme
-  'active-with-opposite': BaseColorScheme & OppositeColorScheme<V>
+  'active-only': MaterialColorScheme
+  'active-with-opposite': MaterialColorScheme & ColorSchemeOpposite<V>
   'split-by-mode': ColorSchemeLight & ColorSchemeDark
-  'all-variants': BaseColorScheme & ColorSchemeLight & ColorSchemeDark
+  'all-variants': MaterialColorScheme & ColorSchemeLight & ColorSchemeDark
 }
 
 export type ColorScheme<
   T extends Strategy,
   V extends 'light' | 'dark' = 'light' | 'dark',
 > = ColorSchemeStrategyMap<V>[T]
+
+export interface Theme {
+  source: number
+  contrastLevel: number
+  variant: Variant
+  schemes: {
+    light: DynamicScheme
+    dark: DynamicScheme
+  }
+  palettes: {
+    primary: TonalPalette
+    secondary: TonalPalette
+    tertiary: TonalPalette
+    neutral: TonalPalette
+    neutralVariant: TonalPalette
+    error: TonalPalette
+  }
+  customColors: CustomColorGroup[]
+}

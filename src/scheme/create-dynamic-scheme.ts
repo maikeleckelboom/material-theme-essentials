@@ -11,8 +11,8 @@ import {
   SchemeVibrant,
   TonalPalette,
 } from '@material/material-color-utilities'
-import { MaterialSchemeOptions } from './themeFromSeed'
-import { toHct } from './hct'
+import { MaterialSchemeOptions } from './seed-theme'
+import { toHct } from '../utils/hct'
 
 export enum Variant {
   MONOCHROME,
@@ -67,7 +67,7 @@ function tryCreateTonalPalette(
 /**
  * Generates a dynamic color scheme based on the provided configuration options.
  */
-export function createMaterialScheme(options: MaterialSchemeOptions): DynamicScheme {
+export function createDynamicScheme(options: MaterialSchemeOptions): DynamicScheme {
   const { contrastLevel = 0, isDark = false, variant = Variant.TONAL_SPOT } = options
 
   const sourceColorArgb = Number(options.seed || options.primary)

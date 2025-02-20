@@ -1,7 +1,15 @@
 import { argbFromRgb } from '@material/material-color-utilities'
-export const HEX_PATTERN = '^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$'
-export const URL_PATTERN = '^(https?:\\/\\/|data:image|file:|\\\\\\\\)'
-export const PATH_PATTERN = '^(?!$)(?:(?:\\.\\.\\/)+|\\.\\/|\\/|)(?:[^/]+\\/?)*[^/]*$'
+import { PATH_PATTERN } from './constants'
+
+export function createPixelsArray({ data }: ImageData): number[] {
+  const pixels: number[] = []
+  const len = data.length
+  for (let i = 0; i < len; i += 4) {
+    const [r, g, b, a] = data.slice(i, i + 4)
+    if (a === 255) pixels.push(argbFromRgb(r!, g!, b!))
+  }
+  return pixels
+}
 
 function createCanvasContext(
   width: number,
@@ -17,6 +25,18 @@ export function createImageDataFromBitmap(bitmap: ImageBitmap): ImageData {
   const context = createCanvasContext(bitmap.width, bitmap.height)
   context.drawImage(bitmap, 0, 0)
   return context.getImageData(0, 0, bitmap.width, bitmap.height)
+}
+
+export async function createImageBitmapFromUrl(
+  url: string,
+  signal?: AbortSignal,
+): Promise<ImageBitmap> {
+  if (!createImageBitmap) throw new Error('createImageBitmap API unavailable')
+  const pathRegex = new RegExp(PATH_PATTERN, 'i')
+  const resolvedUrl = pathRegex.test(url) ? new URL(url, location.href).href : url
+  const response = await fetch(resolvedUrl, { signal, mode: 'cors' })
+  const blob = await response.blob()
+  return createImageBitmap(blob)
 }
 
 export async function createImageDataFromSvg(
@@ -51,26 +71,4 @@ export async function createImageDataFromSvg(
   } finally {
     URL.revokeObjectURL(url)
   }
-}
-
-export async function createImageBitmapFromUrl(
-  url: string,
-  signal?: AbortSignal,
-): Promise<ImageBitmap> {
-  if (!createImageBitmap) throw new Error('createImageBitmap API unavailable')
-  const pathRegex = new RegExp(PATH_PATTERN, 'i')
-  const resolvedUrl = pathRegex.test(url) ? new URL(url, location.href).href : url
-  const response = await fetch(resolvedUrl, { signal, mode: 'cors' })
-  const blob = await response.blob()
-  return createImageBitmap(blob)
-}
-
-export function pixelsFromImageData({ data }: ImageData): number[] {
-  const pixels: number[] = []
-  const len = data.length
-  for (let i = 0; i < len; i += 4) {
-    const [r, g, b, a] = data.slice(i, i + 4)
-    if (a === 255) pixels.push(argbFromRgb(r!, g!, b!))
-  }
-  return pixels
 }

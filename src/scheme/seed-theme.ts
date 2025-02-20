@@ -1,11 +1,7 @@
-import {
-  customColor,
-  CustomColorGroup,
-  DynamicScheme,
-  TonalPalette,
-} from '@material/material-color-utilities'
-import { createMaterialScheme, Variant } from './createMaterialScheme'
-import { resolveColorFromSeed } from './resolveColorFromSeed'
+import { customColor, TonalPalette } from '@material/material-color-utilities'
+import { createDynamicScheme, Variant } from './create-dynamic-scheme'
+import { resolveColor } from '../utils/resolve-color'
+import { Theme } from '../types'
 
 export interface CorePaletteColors {
   primary?: number
@@ -15,7 +11,7 @@ export interface CorePaletteColors {
   neutralVariant?: number
 }
 
-export interface MaterialSchemeBaseOptions extends CorePaletteColors {
+export interface BaseSchemeOptions extends CorePaletteColors {
   variant?: Variant
   contrastLevel?: number
   isDark?: boolean
@@ -37,8 +33,8 @@ export type Seed =
   | ImageBitmapSource
 
 export type MaterialSchemeOptions =
-  | (MaterialSchemeBaseOptions & { primary: number; seed?: Seed })
-  | (MaterialSchemeBaseOptions & { seed: Seed; primary?: number })
+  | (BaseSchemeOptions & { primary: number; seed?: Seed })
+  | (BaseSchemeOptions & { seed: Seed; primary?: number })
 
 export interface StaticColor {
   name: string
@@ -46,7 +42,7 @@ export interface StaticColor {
   blend?: boolean
 }
 
-export type MaterialThemeOptions = Omit<MaterialSchemeOptions, 'isDark'> & {
+export type ThemeOptions = Omit<MaterialSchemeOptions, 'isDark'> & {
   staticColors?: StaticColor[]
 }
 
@@ -56,41 +52,26 @@ export type Strategy =
   | 'split-by-mode'
   | 'all-variants'
 
-export interface MaterialTheme {
-  source: Seed
-  contrastLevel: number
-  variant: Variant
-  schemes: {
-    light: DynamicScheme
-    dark: DynamicScheme
-  }
-  palettes: {
-    primary: TonalPalette
-    secondary: TonalPalette
-    tertiary: TonalPalette
-    neutral: TonalPalette
-    neutralVariant: TonalPalette
-    error: TonalPalette
-  }
-  customColors: CustomColorGroup[]
-}
-
-function isMaterialThemeOptions(
-  value: MaterialThemeOptions | Seed,
-): value is MaterialThemeOptions {
+function isMaterialThemeOptions(value: ThemeOptions | Seed): value is ThemeOptions {
   return (
     value !== null && typeof value === 'object' && ('primary' in value || 'seed' in value)
   )
 }
 
 export async function themeFromSeed(
-  optionsOrSeed: MaterialThemeOptions | Seed,
-): Promise<MaterialTheme> {
-  const opts: MaterialThemeOptions = isMaterialThemeOptions(optionsOrSeed)
+  seed: Seed,
+  options?: Omit<ThemeOptions, 'seed'>,
+): Promise<Theme>
+export async function themeFromSeed(options: ThemeOptions): Promise<Theme>
+export async function themeFromSeed(
+  optionsOrSeed: ThemeOptions | Seed,
+  options?: Omit<ThemeOptions, 'seed'>,
+): Promise<Theme> {
+  const opts: ThemeOptions = isMaterialThemeOptions(optionsOrSeed)
     ? optionsOrSeed
-    : { seed: optionsOrSeed }
+    : { seed: optionsOrSeed, ...options }
 
-  const source = await resolveColorFromSeed(opts.seed || opts.primary!)
+  const source = await resolveColor(opts.seed || opts.primary!)
 
   const {
     primary,
@@ -103,8 +84,8 @@ export async function themeFromSeed(
     staticColors = [],
   } = opts
 
-  const createSchemeForMode = (isDark: boolean = false) =>
-    createMaterialScheme({
+  const createScheme = (isDark: boolean = false) =>
+    createDynamicScheme({
       seed: source,
       isDark,
       primary,
@@ -116,8 +97,8 @@ export async function themeFromSeed(
       variant,
     })
 
-  const lightScheme = createSchemeForMode()
-  const darkScheme = createSchemeForMode(true)
+  const lightScheme = createScheme()
+  const darkScheme = createScheme(true)
 
   const core = {
     a1: lightScheme.primaryPalette,
