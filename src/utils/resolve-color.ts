@@ -1,7 +1,7 @@
 import { score } from '../analysis/score'
 import { createImageBitmapFromUrl, createImageDataFromSvg } from './image'
 import { argbFromHex } from '@material/material-color-utilities'
-import type { Seed } from '../scheme/seed-theme'
+import type { Seed } from '../scheme/create-material-theme'
 import { HEX_PATTERN, PATH_PATTERN, URL_PATTERN } from './constants'
 import { quantizeAsync } from '../analysis/quantize'
 

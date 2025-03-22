@@ -5,8 +5,9 @@ import {
   DynamicScheme,
   MaterialDynamicColors,
 } from '@material/material-color-utilities'
-import { Strategy } from './seed-theme'
+import { StrategyType } from './create-material-theme'
 import { ColorScheme } from '../types'
+import { camelCase } from '../utils/camel-case'
 
 export function processSchemeColors(scheme: DynamicScheme, suffix?: string) {
   const colors: Record<string, number> = {}
@@ -14,22 +15,11 @@ export function processSchemeColors(scheme: DynamicScheme, suffix?: string) {
   for (const [colorName, ColorClass] of Object.entries(MaterialDynamicColors)) {
     if (!(ColorClass instanceof DynamicColor)) continue
 
-    const resolvedColorName = `${colorName}${suffix ?? ''}`
+    const resolvedColorName = camelCase(`${colorName}${suffix ?? ''}`)
     colors[resolvedColorName] = ColorClass.getArgb(scheme)
   }
 
   return colors
-}
-
-export function camelCase(str: string): string {
-  const words = str.match(/\p{Lu}?\p{Ll}+|\p{Lu}+(?!\p{Ll})|\d+/gu) || []
-  return words
-    .map((word, index) =>
-      index === 0
-        ? word.toLowerCase()
-        : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
-    )
-    .join('')
 }
 
 export function formatColorName(
@@ -44,6 +34,7 @@ export function formatColorName(
     .replace(/color/g, camelCase(colorName))
   return camelCase(formattedName + suffix)
 }
+
 
 export function processColorGroup(
   colorName: string,
@@ -62,8 +53,8 @@ export function processColorGroup(
 
 export function processCustomColorGroup(
   colorGroup: CustomColorGroup,
-  options: { isDark?: boolean; strategy?: Strategy } = {},
-): Record<string, number> {
+  options: { isDark?: boolean; strategy?: StrategyType } = {},
+){
   const { isDark = false, strategy = 'active-only' } = options
   const currentGroup = isDark ? colorGroup.dark : colorGroup.light
   const colorName = colorGroup.color.name
@@ -98,7 +89,7 @@ export function processCustomColorGroup(
 
 export function processCustomColorGroups(
   customColors?: CustomColorGroup[],
-  options: { isDark?: boolean; strategy?: Strategy } = {},
+  options: { isDark?: boolean; strategy?: StrategyType } = {},
 ): Record<string, number> {
   return (customColors || []).reduce(
     (acc, customColorGroup) => ({
@@ -109,7 +100,7 @@ export function processCustomColorGroups(
   )
 }
 
-export function generateColorScheme<S extends Strategy, V extends 'light' | 'dark'>(
+export function generateColorScheme<S extends StrategyType, V extends 'light' | 'dark'>(
   theme: {
     schemes: {
       light: DynamicScheme
@@ -143,23 +134,23 @@ export function generateColorScheme<S extends Strategy, V extends 'light' | 'dar
         ...processSchemeColors(currentScheme),
         ...processSchemeColors(
           isDark ? schemes.light : schemes.dark,
-          isDark ? 'Light' : 'Dark',
+          isDark ? '_light' : '_dark',
         ),
         ...customColorScheme,
       } as ColorScheme<S, V> & Record<string, number>
 
     case 'split-by-mode':
       return {
-        ...processSchemeColors(schemes.light, 'Light'),
-        ...processSchemeColors(schemes.dark, 'Dark'),
+        ...processSchemeColors(schemes.light, '_light'),
+        ...processSchemeColors(schemes.dark, '_dark'),
         ...customColorScheme,
       } as ColorScheme<S, V> & Record<string, number>
 
     case 'all-variants':
       return {
         ...processSchemeColors(currentScheme),
-        ...processSchemeColors(schemes.light, 'Light'),
-        ...processSchemeColors(schemes.dark, 'Dark'),
+        ...processSchemeColors(schemes.light, '_light'),
+        ...processSchemeColors(schemes.dark, '_dark'),
         ...customColorScheme,
       } as ColorScheme<S, V> & Record<string, number>
 

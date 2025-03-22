@@ -11,7 +11,7 @@ import {
   SchemeVibrant,
   TonalPalette,
 } from '@material/material-color-utilities'
-import { MaterialSchemeOptions } from './seed-theme'
+import { MaterialSchemeOptions } from './create-material-theme'
 import { toHct } from '../utils/hct'
 
 export enum Variant {

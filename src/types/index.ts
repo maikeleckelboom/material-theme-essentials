@@ -1,4 +1,4 @@
-import { Strategy } from '../scheme/seed-theme'
+import { StrategyType } from '../scheme/create-material-theme'
 import { Variant } from '../scheme/create-dynamic-scheme'
 import {
   CustomColorGroup,
@@ -63,6 +63,8 @@ export interface MaterialColorScheme {
   onTertiaryFixedVariant: number
 }
 
+export type MaterialColorKeys = keyof MaterialColorScheme
+
 export type ColorSchemeLight = {
   [K in keyof MaterialColorScheme as `${K}Light`]: number
 }
@@ -83,7 +85,7 @@ export type ColorSchemeStrategyMap<V extends 'light' | 'dark'> = {
 }
 
 export type ColorScheme<
-  T extends Strategy,
+  T extends StrategyType,
   V extends 'light' | 'dark' = 'light' | 'dark',
 > = ColorSchemeStrategyMap<V>[T]
 

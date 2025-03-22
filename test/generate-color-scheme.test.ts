@@ -1,4 +1,4 @@
-import { Strategy, themeFromSeed } from '../src/scheme/seed-theme'
+import { StrategyType, createMaterialTheme } from '../src/scheme/create-material-theme'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { generateColorScheme } from '../src/scheme/generate-color-scheme'
 import { argbFromHex } from '@material/material-color-utilities'
@@ -17,7 +17,7 @@ describe('generateColorScheme', () => {
     },
   ]
 
-  const strategies: Strategy[] = [
+  const strategies: StrategyType[] = [
     'active-only',
     'active-with-opposite',
     'split-by-mode',
@@ -35,10 +35,10 @@ describe('generateColorScheme', () => {
     'onMyUncleLikesToPaintContainer',
   ]
 
-  let theme: Awaited<ReturnType<typeof themeFromSeed>>
+  let theme: Awaited<ReturnType<typeof createMaterialTheme>>
 
   beforeEach(async () => {
-    theme = await themeFromSeed({
+    theme = await createMaterialTheme({
       primary: primaryColor,
       staticColors,
     })
@@ -121,17 +121,24 @@ describe('generateColorScheme', () => {
   })
 
   it('should handle invalid color values', async () => {
-    theme = await themeFromSeed({
+    theme = await createMaterialTheme({
       primary: primaryColor,
       staticColors: [
         {
-          name: 'Invalid color',
+          name: 'Hello this is my color 1',
           value: argbFromHex('#ZZZZZZ'),
-        },
+        } as const,
+        {
+          name: 'Hello this is my color 2',
+          value: argbFromHex('#123456'),
+        } as const,
       ],
     })
     const colorScheme = generateColorScheme(theme, { strategy: 'active-only' })
     expect(colorScheme).toHaveProperty('primary')
+
+    expect(colorScheme).toHaveProperty('helloThisIsMyColor1')
+    console.log(colorScheme)
   })
 
   it('should handle large number of static colors', async () => {
@@ -139,7 +146,7 @@ describe('generateColorScheme', () => {
       name: `Color ${i}`,
       value: argbFromHex('#123456'),
     }))
-    theme = await themeFromSeed({
+    theme = await createMaterialTheme({
       primary: primaryColor,
       staticColors: largeStaticColors,
     })

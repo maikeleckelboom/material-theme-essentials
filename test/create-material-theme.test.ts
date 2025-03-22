@@ -1,16 +1,16 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { themeFromSeed } from '../src/scheme/seed-theme'
+import { createMaterialTheme } from '../src/scheme/create-material-theme'
 
 beforeAll(async () => {})
 
-describe('themeFromSeed', () => {
+describe('createMaterialTheme', () => {
   it('should accept an direct argument', async () => {
-    const theme = await themeFromSeed(0xff00ff)
+    const theme = await createMaterialTheme(0xff00ff)
     expect(theme).toBeDefined()
   })
 
   it('should accept an options object', async () => {
-    const theme = await themeFromSeed({
+    const theme = await createMaterialTheme({
       seed: 0xff00ff,
     })
     expect(theme).toBeDefined()

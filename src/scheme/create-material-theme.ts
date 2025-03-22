@@ -46,7 +46,7 @@ export type ThemeOptions = Omit<MaterialSchemeOptions, 'isDark'> & {
   staticColors?: StaticColor[]
 }
 
-export type Strategy =
+export type StrategyType =
   | 'active-only'
   | 'active-with-opposite'
   | 'split-by-mode'
@@ -58,12 +58,12 @@ function isMaterialThemeOptions(value: ThemeOptions | Seed): value is ThemeOptio
   )
 }
 
-export async function themeFromSeed(
+export async function createMaterialTheme(
   seed: Seed,
   options?: Omit<ThemeOptions, 'seed'>,
 ): Promise<Theme>
-export async function themeFromSeed(options: ThemeOptions): Promise<Theme>
-export async function themeFromSeed(
+export async function createMaterialTheme(options: ThemeOptions): Promise<Theme>
+export async function createMaterialTheme(
   optionsOrSeed: ThemeOptions | Seed,
   options?: Omit<ThemeOptions, 'seed'>,
 ): Promise<Theme> {
