@@ -1,4 +1,4 @@
-import { StrategyType } from '../scheme/create-material-theme'
+import { MaterialColorStrategy } from '../scheme/create-material-theme'
 import { Variant } from '../scheme/create-dynamic-scheme'
 import {
   CustomColorGroup,
@@ -78,15 +78,12 @@ export type ColorSchemeOpposite<T extends 'light' | 'dark'> = T extends 'dark'
   : ColorSchemeLight
 
 export type ColorSchemeStrategyMap<V extends 'light' | 'dark'> = {
-  'active-only': MaterialColorScheme
-  'active-with-opposite': MaterialColorScheme & ColorSchemeOpposite<V>
-  'split-by-mode': ColorSchemeLight & ColorSchemeDark
-  'all-variants': MaterialColorScheme & ColorSchemeLight & ColorSchemeDark
+  [K in MaterialColorStrategy]: ColorScheme
 }
 
-export type ColorScheme<
-  T extends StrategyType,
-  V extends 'light' | 'dark' = 'light' | 'dark',
+export type ColorSchemeFromStrategy<
+  V extends 'light' | 'dark',
+  T extends MaterialColorStrategy,
 > = ColorSchemeStrategyMap<V>[T]
 
 export interface Theme {

@@ -5,11 +5,25 @@ import {
   DynamicScheme,
   MaterialDynamicColors,
 } from '@material/material-color-utilities'
-import { StrategyType } from './create-material-theme'
+import { MaterialColorStrategy } from './create-material-theme'
 import { ColorScheme } from '../types'
 import { camelCase } from '../utils/camel-case'
 
-export function processSchemeColors(scheme: DynamicScheme, suffix?: string) {
+/** Suffix constants to avoid magic strings */
+const LIGHT_SUFFIX: string = '_light' as const
+const DARK_SUFFIX: string = '_dark' as const
+
+/**
+ * Processes scheme colors by iterating over MaterialDynamicColors.
+ *
+ * @param scheme - The dynamic color scheme.
+ * @param suffix - Optional suffix to append to color names.
+ * @returns A record mapping processed color names to ARGB values.
+ */
+export function processSchemeColors(
+  scheme: DynamicScheme,
+  suffix?: string,
+): Record<string, number> {
   const colors: Record<string, number> = {}
 
   for (const [colorName, ColorClass] of Object.entries(MaterialDynamicColors)) {
@@ -22,6 +36,16 @@ export function processSchemeColors(scheme: DynamicScheme, suffix?: string) {
   return colors
 }
 
+/**
+ * Formats color names using a template system with explicit token replacement.
+ *
+ * @param template - A template string that includes a placeholder 'color'.
+ * @param colorName - The base color name.
+ * @param options - Optional formatting options including suffix and delimiter.
+ * @returns The formatted color name.
+ * @example
+ * formatColorName('{color}Container', 'primary') => 'primaryContainer'
+ */
 export function formatColorName(
   template: string,
   colorName: string,
@@ -35,63 +59,76 @@ export function formatColorName(
   return camelCase(formattedName + suffix)
 }
 
-
+/**
+ * Processes a group of colors by applying formatting to each key.
+ *
+ * @param colorName - The base color name.
+ * @param colorGroup - The color group containing key-value pairs.
+ * @param suffix - Optional suffix for formatting.
+ * @returns A record mapping formatted keys to ARGB values.
+ */
 export function processColorGroup(
   colorName: string,
   colorGroup: ColorGroup,
   suffix?: string,
-) {
-  return Object.entries(colorGroup).reduce(
-    (acc, [key, value]) => {
-      const resolvedKey = formatColorName(key, colorName, suffix ? { suffix } : undefined)
-      acc[resolvedKey] = value
-      return acc
-    },
-    {} as Record<string, number>,
-  )
+): Record<string, number> {
+  const entries = Object.entries(colorGroup).map(([key, value]) => [
+    formatColorName(key, colorName, suffix ? { suffix } : undefined),
+    value
+  ])
+  return Object.fromEntries(entries)
 }
 
+/**
+ * Processes a custom color group based on the provided strategy.
+ *
+ * @param colorGroup - The custom color group.
+ * @param options - Options including whether the current mode is dark and the strategy to use.
+ * @returns A record mapping processed color names to ARGB values.
+ */
 export function processCustomColorGroup(
   colorGroup: CustomColorGroup,
-  options: { isDark?: boolean; strategy?: StrategyType } = {},
-){
-  const { isDark = false, strategy = 'active-only' } = options
+  options: { isDark?: boolean; strategy?: MaterialColorStrategy } = {},
+): Record<string, number> {
+  const { isDark = false, strategy = 'adaptive' } = options
   const currentGroup = isDark ? colorGroup.dark : colorGroup.light
   const colorName = colorGroup.color.name
 
   switch (strategy) {
-    case 'active-only':
+    case 'adaptive':
       return processColorGroup(colorName, currentGroup)
-    case 'active-with-opposite':
+    case 'forced-contrast':
       return {
         ...processColorGroup(colorName, currentGroup),
         ...processColorGroup(
           colorName,
           isDark ? colorGroup.light : colorGroup.dark,
-          isDark ? '_light' : '_dark',
+          isDark ? LIGHT_SUFFIX : DARK_SUFFIX,
         ),
       }
-    case 'split-by-mode':
-      return {
-        ...processColorGroup(colorName, colorGroup.light, '_light'),
-        ...processColorGroup(colorName, colorGroup.dark, '_dark'),
-      }
-    case 'all-variants':
+    case 'design-system':
       return {
         ...processColorGroup(colorName, currentGroup),
-        ...processColorGroup(colorName, colorGroup.light, '_light'),
-        ...processColorGroup(colorName, colorGroup.dark, '_dark'),
+        ...processColorGroup(colorName, colorGroup.light, LIGHT_SUFFIX),
+        ...processColorGroup(colorName, colorGroup.dark, DARK_SUFFIX),
       }
     default:
       throw new Error(`Invalid strategy: ${strategy}`)
   }
 }
 
+/**
+ * Processes an array of custom color groups.
+ *
+ * @param customColors - Optional array of custom color groups.
+ * @param options - Options including whether the current mode is dark and the strategy to use.
+ * @returns A merged record of all processed custom color groups.
+ */
 export function processCustomColorGroups(
   customColors?: CustomColorGroup[],
-  options: { isDark?: boolean; strategy?: StrategyType } = {},
+  options: { isDark?: boolean; strategy?: MaterialColorStrategy } = {},
 ): Record<string, number> {
-  return (customColors || []).reduce(
+  return (customColors || []).reduce<Record<string, number>>(
     (acc, customColorGroup) => ({
       ...acc,
       ...processCustomColorGroup(customColorGroup, options),
@@ -100,7 +137,24 @@ export function processCustomColorGroups(
   )
 }
 
-export function generateColorScheme<S extends StrategyType, V extends 'light' | 'dark'>(
+/**
+ * Merges multiple color scheme records into one.
+ *
+ * @param schemes - Array of color scheme records to merge.
+ * @returns A single merged color scheme record.
+ */
+function mergeColorSchemes(...schemes: Record<string, number>[]): Record<string, number> {
+  return schemes.reduce((acc, scheme) => ({ ...acc, ...scheme }), {})
+}
+
+/**
+ * Generates a complete color scheme based on the provided theme and options.
+ *
+ * @param theme - The theme containing light/dark dynamic schemes and optional custom colors.
+ * @param options - Options including the strategy and variant ('light' or 'dark').
+ * @returns A merged color scheme record with processed color values.
+ */
+export function generateColorScheme<S extends MaterialColorStrategy, V extends 'light' | 'dark'>(
   theme: {
     schemes: {
       light: DynamicScheme
@@ -111,54 +165,44 @@ export function generateColorScheme<S extends StrategyType, V extends 'light' | 
   options: { strategy?: S; variant?: V },
 ): ColorScheme<S, V> & Record<string, number> {
   const { schemes, customColors = [] } = theme
-  const { strategy = 'active-only', variant = 'light' } = options
-
+  const { strategy = 'adaptive', variant = 'light' } = options
   const isDark = variant === 'dark'
-
   const currentScheme = isDark ? schemes.dark : schemes.light
-
-  const customColorScheme = processCustomColorGroups(customColors, {
-    isDark,
-    strategy,
-  })
+  const customColorScheme = processCustomColorGroups(customColors, { isDark, strategy })
 
   switch (strategy) {
-    case 'active-only':
-      return {
-        ...processSchemeColors(currentScheme),
-        ...customColorScheme,
-      } as ColorScheme<S, V> & Record<string, number>
-
-    case 'active-with-opposite':
-      return {
-        ...processSchemeColors(currentScheme),
-        ...processSchemeColors(
+    case 'adaptive':
+      return mergeColorSchemes(
+        processSchemeColors(currentScheme),
+        customColorScheme,
+      ) as ColorScheme<S, V> & Record<string, number>
+    case 'forced-contrast':
+      return mergeColorSchemes(
+        processSchemeColors(currentScheme),
+        processSchemeColors(
           isDark ? schemes.light : schemes.dark,
-          isDark ? '_light' : '_dark',
+          isDark ? LIGHT_SUFFIX : DARK_SUFFIX,
         ),
-        ...customColorScheme,
-      } as ColorScheme<S, V> & Record<string, number>
-
-    case 'split-by-mode':
-      return {
-        ...processSchemeColors(schemes.light, '_light'),
-        ...processSchemeColors(schemes.dark, '_dark'),
-        ...customColorScheme,
-      } as ColorScheme<S, V> & Record<string, number>
-
-    case 'all-variants':
-      return {
-        ...processSchemeColors(currentScheme),
-        ...processSchemeColors(schemes.light, '_light'),
-        ...processSchemeColors(schemes.dark, '_dark'),
-        ...customColorScheme,
-      } as ColorScheme<S, V> & Record<string, number>
-
+        customColorScheme,
+      ) as ColorScheme<S, V> & Record<string, number>
+    case 'design-system':
+      return mergeColorSchemes(
+        processSchemeColors(currentScheme),
+        processSchemeColors(schemes.light, LIGHT_SUFFIX),
+        processSchemeColors(schemes.dark, DARK_SUFFIX),
+        customColorScheme,
+      ) as ColorScheme<S, V> & Record<string, number>
     default:
       return assertNever(strategy)
   }
 }
 
+/**
+ * A type-safety helper to ensure all strategies are handled.
+ *
+ * @param x - A value that should be of type never.
+ * @throws An error if an unexpected strategy is encountered.
+ */
 function assertNever(x: never): never {
   throw new Error(`Unexpected strategy: ${x}`)
 }

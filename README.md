@@ -58,7 +58,7 @@ video.onloadeddata = async () => {
 Create complete color schemes with different generation strategies:
 
 ```ts
-import { seedTheme, toColorScheme, StrategyType } from 'material-theme-essentials'
+import { seedTheme, toColorScheme, MaterialColorStrategy } from 'material-theme-essentials'
 
 // Create theme
 const theme = await seedTheme('https://example.com/image.jpg', {
@@ -130,15 +130,16 @@ __Generates a complete color scheme from a base theme.__
 Configuration options:
 
 ```ts
+import { MaterialColorStrategy } from 'material-theme-essentials'
 
 const scheme = toColorScheme(theme, {
-  strategy: StrategyType
+  strategy: MaterialColorStrategy
 })
-````
+```
 
 ## TypeScript Reference
 ```ts
-import type { StrategyType } from 'material-theme-essentials'
+import type { MaterialColorStrategy } from 'material-theme-essentials'
 
 export interface BaseColorScheme {
   primaryPaletteKeyColor: number
@@ -214,10 +215,13 @@ export type ColorSchemeStrategyMap<V extends 'light' | 'dark'> = {
   'active-with-opposite': BaseColorScheme & OppositeColorScheme<V>
   'split-by-mode': ColorSchemeLight & ColorSchemeDark
   'all-variants': BaseColorScheme & ColorSchemeLight & ColorSchemeDark
+  'adaptive': BaseColorScheme
+  'forced-contrast': BaseColorScheme & OppositeColorScheme<V>
+  'design-system': BaseColorScheme & ColorSchemeLight & ColorSchemeDark
 }
 
 export type ColorScheme<
-  T extends StrategyType,
+  T extends MaterialColorStrategy,
   V extends 'light' | 'dark' = 'light' | 'dark',
 > = ColorSchemeStrategyMap<V>[T]
 ```

@@ -46,11 +46,10 @@ export type ThemeOptions = Omit<MaterialSchemeOptions, 'isDark'> & {
   staticColors?: StaticColor[]
 }
 
-export type StrategyType =
-  | 'active-only'
-  | 'active-with-opposite'
-  | 'split-by-mode'
-  | 'all-variants'
+export type MaterialColorStrategy =
+  | 'adaptive'         // Auto light/dark (system)
+  | 'forced-contrast'  // Explicit light + dark
+  | 'design-system'    // All variants (Figma-like)
 
 function isMaterialThemeOptions(value: ThemeOptions | Seed): value is ThemeOptions {
   return (
