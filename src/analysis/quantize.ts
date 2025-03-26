@@ -29,7 +29,7 @@ export async function quantizeAsync(
   options: QuantizeWorkerOptions = {},
 ): Promise<QuantizeWorkerResult> {
   const worker = createQuantizeWorker()
-  const { abortSignal } = options
+  const { signal } = options
 
   return new Promise<QuantizeWorkerResult>((resolve, reject) => {
     const abortHandler = () => {
@@ -37,19 +37,19 @@ export async function quantizeAsync(
       reject(new DOMException('The operation was aborted.', 'AbortError'))
     }
 
-    if (abortSignal?.aborted) return abortHandler()
-    abortSignal?.addEventListener('abort', abortHandler, { once: true })
+    if (signal?.aborted) return abortHandler()
+    signal?.addEventListener('abort', abortHandler, { once: true })
 
     worker.onmessage = (event) => {
       if (isDoneEvent(event)) {
-        abortSignal?.removeEventListener('abort', abortHandler)
+        signal?.removeEventListener('abort', abortHandler)
         resolve(event.data.colorToCount)
         worker.terminate()
       }
     }
 
     worker.onerror = (error) => {
-      abortSignal?.removeEventListener('abort', abortHandler)
+      signal?.removeEventListener('abort', abortHandler)
       reject(error)
       worker.terminate()
     }

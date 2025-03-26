@@ -3,7 +3,7 @@ import { isStartEvent, quantize } from './quantize'
 
 export interface QuantizeWorkerOptions {
   maxColors?: number
-  abortSignal?: AbortSignal
+  signal?: AbortSignal
 }
 
 export interface QuantizeWorkerStartData extends QuantizeWorkerOptions {
