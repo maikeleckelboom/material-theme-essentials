@@ -9,17 +9,24 @@ import { StrategyType } from './create-material-theme'
 import { ColorScheme } from '../types'
 import { camelCase } from '../utils/camel-case'
 
-export function processSchemeColors(scheme: DynamicScheme, suffix?: string) {
-  const colors: Record<string, number> = {}
+function processSchemeColors(scheme: DynamicScheme, suffix?: string) {
+  return Object.fromEntries(
+    Object.entries(MaterialDynamicColors)
+      .filter(([, color]) => color instanceof DynamicColor)
+      .map(([name, color]) => [
+        camelCase(`${name}_${suffix ?? ''}`),
+        (color as DynamicColor).getArgb(scheme),
+      ]),
+  )
+}
 
-  for (const [colorName, ColorClass] of Object.entries(MaterialDynamicColors)) {
-    if (!(ColorClass instanceof DynamicColor)) continue
-
-    const resolvedColorName = camelCase(`${colorName}${suffix ?? ''}`)
-    colors[resolvedColorName] = ColorClass.getArgb(scheme)
-  }
-
-  return colors
+function processColorGroup(colorName: string, group: ColorGroup, suffix?: string) {
+  return Object.fromEntries(
+    Object.entries(group).map(([key, value]) => [
+      formatColorName(key, colorName, { suffix }),
+      value,
+    ]),
+  )
 }
 
 export function formatColorName(
@@ -32,29 +39,13 @@ export function formatColorName(
     .replace(/([A-Z])/g, `${delimiter}$1`)
     .toLowerCase()
     .replace(/color/g, camelCase(colorName))
-  return camelCase(formattedName + suffix)
-}
-
-
-export function processColorGroup(
-  colorName: string,
-  colorGroup: ColorGroup,
-  suffix?: string,
-) {
-  return Object.entries(colorGroup).reduce(
-    (acc, [key, value]) => {
-      const resolvedKey = formatColorName(key, colorName, suffix ? { suffix } : undefined)
-      acc[resolvedKey] = value
-      return acc
-    },
-    {} as Record<string, number>,
-  )
+  return camelCase(`${formattedName}${delimiter}${suffix}`)
 }
 
 export function processCustomColorGroup(
   colorGroup: CustomColorGroup,
   options: { isDark?: boolean; strategy?: StrategyType } = {},
-){
+) {
   const { isDark = false, strategy = 'active-only' } = options
   const currentGroup = isDark ? colorGroup.dark : colorGroup.light
   const colorName = colorGroup.color.name
@@ -68,19 +59,19 @@ export function processCustomColorGroup(
         ...processColorGroup(
           colorName,
           isDark ? colorGroup.light : colorGroup.dark,
-          isDark ? '_light' : '_dark',
+          isDark ? 'light' : 'dark',
         ),
       }
     case 'split-by-mode':
       return {
-        ...processColorGroup(colorName, colorGroup.light, '_light'),
-        ...processColorGroup(colorName, colorGroup.dark, '_dark'),
+        ...processColorGroup(colorName, colorGroup.light, 'light'),
+        ...processColorGroup(colorName, colorGroup.dark, 'dark'),
       }
     case 'all-variants':
       return {
         ...processColorGroup(colorName, currentGroup),
-        ...processColorGroup(colorName, colorGroup.light, '_light'),
-        ...processColorGroup(colorName, colorGroup.dark, '_dark'),
+        ...processColorGroup(colorName, colorGroup.light, 'light'),
+        ...processColorGroup(colorName, colorGroup.dark, 'dark'),
       }
     default:
       throw new Error(`Invalid strategy: ${strategy}`)
@@ -134,23 +125,23 @@ export function generateColorScheme<S extends StrategyType, V extends 'light' | 
         ...processSchemeColors(currentScheme),
         ...processSchemeColors(
           isDark ? schemes.light : schemes.dark,
-          isDark ? '_light' : '_dark',
+          isDark ? 'light' : 'dark',
         ),
         ...customColorScheme,
       } as ColorScheme<S, V> & Record<string, number>
 
     case 'split-by-mode':
       return {
-        ...processSchemeColors(schemes.light, '_light'),
-        ...processSchemeColors(schemes.dark, '_dark'),
+        ...processSchemeColors(schemes.light, 'light'),
+        ...processSchemeColors(schemes.dark, 'dark'),
         ...customColorScheme,
       } as ColorScheme<S, V> & Record<string, number>
 
     case 'all-variants':
       return {
         ...processSchemeColors(currentScheme),
-        ...processSchemeColors(schemes.light, '_light'),
-        ...processSchemeColors(schemes.dark, '_dark'),
+        ...processSchemeColors(schemes.light, 'light'),
+        ...processSchemeColors(schemes.dark, 'dark'),
         ...customColorScheme,
       } as ColorScheme<S, V> & Record<string, number>
 
