@@ -37,5 +37,9 @@
     "vitest": "^3.0.5",
     "eslint-plugin-vitest": "^0.5.4",
     "zod": "^3.24.2"
+  },
+  "dependencies": {
+    "camelcase": "^8.0.0",
+    "kebab-case": "^2.0.1"
   }
 }

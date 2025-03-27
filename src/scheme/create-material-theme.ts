@@ -13,7 +13,7 @@ export interface CorePaletteColors {
 
 export interface BaseSchemeOptions extends CorePaletteColors {
   variant?: Variant
-  contrastLevel?: number
+  contrast?: number
   isDark?: boolean
   isAmoled?: boolean
 }
@@ -78,7 +78,7 @@ export async function createMaterialTheme(
     tertiary,
     neutral,
     neutralVariant,
-    contrastLevel = 0,
+    contrast = 0,
     variant = Variant.TONAL_SPOT,
     staticColors = [],
   } = opts
@@ -92,7 +92,7 @@ export async function createMaterialTheme(
       tertiary,
       neutral,
       neutralVariant,
-      contrastLevel,
+      contrast,
       variant,
     })
 
@@ -110,7 +110,7 @@ export async function createMaterialTheme(
 
   return {
     source,
-    contrastLevel,
+    contrastLevel: contrast,
     variant,
     schemes: {
       light: lightScheme,

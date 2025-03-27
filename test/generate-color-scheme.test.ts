@@ -18,7 +18,7 @@ describe('generateColorScheme', () => {
     },
   ]
 
-  const strategies: Strategy[] = ['system', 'adaptive', 'split', 'full']
+  const strategies: Strategy[] = ['default', 'contextual', 'dual', 'comprehensive']
 
   const customColorKeys = [
     'myTestColor',
@@ -46,10 +46,10 @@ describe('generateColorScheme', () => {
 
       const expectedCustomKeys: string[] = (() => {
         const strategyTransformations: Record<Strategy, (key: string) => string[]> = {
-          system: (key) => [key],
-          adaptive: (key) => [key, `${key}Dark`],
-          split: (key) => [`${key}Light`, `${key}Dark`],
-          full: (key) => [key, `${key}Light`, `${key}Dark`],
+          default: (key) => [key],
+          contextual: (key) => [key, `${key}Dark`],
+          dual: (key) => [`${key}Light`, `${key}Dark`],
+          comprehensive: (key) => [key, `${key}Light`, `${key}Dark`],
         }
 
         return customColorKeys.flatMap((key) => strategyTransformations[strategy](key))
@@ -67,24 +67,24 @@ describe('generateColorScheme', () => {
       ]
 
       switch (strategy) {
-        case 'system':
+        case 'default':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(key)
           })
           break
-        case 'adaptive':
+        case 'contextual':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(key)
             expect(colorScheme).toHaveProperty(`${key}Dark`)
           })
           break
-        case 'split':
+        case 'dual':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(`${key}Light`)
             expect(colorScheme).toHaveProperty(`${key}Dark`)
           })
           break
-        case 'full':
+        case 'comprehensive':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(key)
             expect(colorScheme).toHaveProperty(`${key}Light`)
@@ -136,7 +136,7 @@ describe('generateColorScheme', () => {
       primary: primaryColor,
       staticColors,
     })
-    const colorScheme = generateColorScheme(theme, { strategy: 'system' })
+    const colorScheme = generateColorScheme(theme, { strategy: 'default' })
     expect(colorScheme).toHaveProperty('primary')
   })
 })

@@ -8,7 +8,7 @@ and color scheme transformations.
 ## Features
 
 - 🎨 Convert multiple seed types to color values (images, videos, canvases, etc.)
-- 🌗 Generate full Material Design color schemes
+- 🌗 Generate comprehensive Material Design color schemes
 - 🛠 Custom color blending and strategy-based scheme generation
 - 📱 Cross-environment support (Browser, Node.js with polyfills)
 
@@ -55,7 +55,7 @@ video.onloadeddata = async () => {
 
 ## seedTheme & toColorScheme
 
-Create full color schemes with different generation strategies:
+Create comprehensive color schemes with different generation strategies:
 
 ```ts
 import { seedTheme, toColorScheme, Strategy } from 'material-theme-essentials'
@@ -100,13 +100,13 @@ Supported seed types:
 
 ### seedTheme(seed: ThemeSeed): Promise<Theme>
 
-__Generates a system theme from a seed object.__
+__Generates a default theme from a seed object.__
 
 ```ts
 export interface MaterialTheme {
   source: Seed
-  contrastLevel: number
-  mode: Variant
+  contrast: number
+  isDark: Variant
   schemes: {
     light: DynamicScheme
     dark: DynamicScheme
@@ -125,7 +125,7 @@ export interface MaterialTheme {
 
 ### toColorScheme(theme: Theme, options?: SchemeOptions)
 
-__Generates a full color scheme from a system theme.__
+__Generates a comprehensive color scheme from a default theme.__
 
 Configuration options:
 
@@ -210,10 +210,10 @@ export type OppositeColorScheme<T extends 'light' | 'dark'> = T extends 'dark'
   : ColorSchemeLight
 
 export type ColorSchemeStrategyMap<K extends 'light' | 'dark'> = {
-  'system': BaseColorScheme
-  'adaptive': BaseColorScheme & OppositeColorScheme<K>
-  'split': ColorSchemeLight & ColorSchemeDark
-  'full': BaseColorScheme & ColorSchemeLight & ColorSchemeDark
+  'default': BaseColorScheme
+  'contextual': BaseColorScheme & OppositeColorScheme<K>
+  'dual': ColorSchemeLight & ColorSchemeDark
+  'comprehensive': BaseColorScheme & ColorSchemeLight & ColorSchemeDark
 }
 
 export type ColorScheme<

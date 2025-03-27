@@ -1,4 +1,4 @@
-import { Variant } from '../scheme/create-dynamic-scheme'
+import { Variant } from '../scheme'
 import {
   CustomColorGroup,
   DynamicScheme,
@@ -75,10 +75,10 @@ export type ColorSchemeOpposite<T extends 'light' | 'dark'> = T extends 'dark'
   : ColorSchemeLight
 
 export type ColorSchemeStrategyMap<V extends 'light' | 'dark' = 'light' | 'dark'> = {
-  system: MaterialColorScheme
-  adaptive: MaterialColorScheme & ColorSchemeOpposite<V>
-  split: ColorSchemeLight & ColorSchemeDark
-  full: MaterialColorScheme & ColorSchemeLight & ColorSchemeDark
+  default: MaterialColorScheme
+  contextual: MaterialColorScheme & ColorSchemeOpposite<V>
+  dual: ColorSchemeLight & ColorSchemeDark
+  comprehensive: MaterialColorScheme & ColorSchemeLight & ColorSchemeDark
 }
 
 export type Strategy = keyof ColorSchemeStrategyMap

@@ -66,14 +66,28 @@ function tryCreateTonalPalette(
 
 /**
  * Generates a dynamic color scheme based on the provided configuration options.
+ * Overloaded to accept either a seed color + options or a complete options object.
  */
-export function createDynamicScheme(options: MaterialSchemeOptions): DynamicScheme {
-  const { contrastLevel = 0, isDark = false, variant = Variant.TONAL_SPOT } = options
+export function createDynamicScheme(
+  seed: number,
+  options?: Omit<MaterialSchemeOptions, 'seed' | 'primary'>,
+): DynamicScheme
+export function createDynamicScheme(options: MaterialSchemeOptions): DynamicScheme
+export function createDynamicScheme(
+  seedOrOptions: number | MaterialSchemeOptions,
+  maybeOptions?: Omit<MaterialSchemeOptions, 'seed' | 'primary'>,
+): DynamicScheme {
+  const options: MaterialSchemeOptions =
+    typeof seedOrOptions === 'number'
+      ? { ...maybeOptions, seed: seedOrOptions }
+      : seedOrOptions
+
+  const { contrast = 0, isDark = false, variant = Variant.TONAL_SPOT } = options
 
   const sourceColorArgb = Number(options.seed || options.primary)
 
   const SchemeVariant = getSchemeForVariant(variant)
-  const scheme = new SchemeVariant(toHct(sourceColorArgb), isDark, contrastLevel)
+  const scheme = new SchemeVariant(toHct(sourceColorArgb), isDark, contrast)
 
   if (isSeedColorBased(options)) {
     return scheme
@@ -90,7 +104,7 @@ export function createDynamicScheme(options: MaterialSchemeOptions): DynamicSche
   return new DynamicScheme({
     sourceColorArgb,
     isDark,
-    contrastLevel,
+    contrastLevel: contrast,
     variant,
     primaryPalette: tryCreateTonalPalette(options.primary, core.a1),
     secondaryPalette: tryCreateTonalPalette(options.secondary, core.a2),
