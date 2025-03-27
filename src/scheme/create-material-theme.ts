@@ -1,6 +1,6 @@
 import { customColor, TonalPalette } from '@material/material-color-utilities'
 import { createDynamicScheme, Variant } from './create-dynamic-scheme'
-import { resolveSourceColor } from '../utils/resolve-source-color'
+import { resolveSourceColor } from './resolve-source-color'
 import { Theme } from '../types'
 
 export interface CorePaletteColors {
@@ -45,12 +45,6 @@ export interface StaticColor {
 export type ThemeOptions = Omit<MaterialSchemeOptions, 'isDark'> & {
   staticColors?: StaticColor[]
 }
-
-export type StrategyType =
-  | 'active-only'
-  | 'active-with-opposite'
-  | 'split-by-mode'
-  | 'all-variants'
 
 function isMaterialThemeOptions(value: ThemeOptions | Seed): value is ThemeOptions {
   return (

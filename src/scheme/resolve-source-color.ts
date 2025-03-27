@@ -1,8 +1,8 @@
 import { score } from '../analysis/score'
-import { createImageBitmapFromUrl, createImageDataFromSvg } from './image'
+import { createImageBitmapFromUrl, createImageDataFromSvg } from '../utils/image'
 import { argbFromHex } from '@material/material-color-utilities'
-import type { Seed } from '../scheme/create-material-theme'
-import { HEX_PATTERN, PATH_PATTERN, URL_PATTERN } from './constants'
+import type { Seed } from './create-material-theme'
+import { HEX_PATTERN, PATH_PATTERN, URL_PATTERN } from '../utils/constants'
 import { quantize } from '../analysis/quantize'
 
 async function getMostSuitableColor(bitmap: ImageBitmap): Promise<number> {

@@ -58,7 +58,7 @@ video.onloadeddata = async () => {
 Create complete color schemes with different generation strategies:
 
 ```ts
-import { seedTheme, toColorScheme, StrategyType } from 'material-theme-essentials'
+import { seedTheme, toColorScheme, ColorStrategy } from 'material-theme-essentials'
 
 // Create theme
 const theme = await seedTheme('https://example.com/image.jpg', {
@@ -106,7 +106,7 @@ __Generates a base theme from a seed object.__
 export interface MaterialTheme {
   source: Seed
   contrastLevel: number
-  variant: Variant
+  mode: Variant
   schemes: {
     light: DynamicScheme
     dark: DynamicScheme
@@ -132,13 +132,13 @@ Configuration options:
 ```ts
 
 const scheme = toColorScheme(theme, {
-  strategy: StrategyType
+  strategy: ColorStrategy
 })
 ````
 
 ## TypeScript Reference
 ```ts
-import type { StrategyType } from 'material-theme-essentials'
+import type { ColorStrategy } from 'material-theme-essentials'
 
 export interface BaseColorScheme {
   primaryPaletteKeyColor: number
@@ -209,17 +209,17 @@ export type OppositeColorScheme<T extends 'light' | 'dark'> = T extends 'dark'
   ? ColorSchemeDark
   : ColorSchemeLight
 
-export type ColorSchemeStrategyMap<V extends 'light' | 'dark'> = {
-  'active-only': BaseColorScheme
-  'active-with-opposite': BaseColorScheme & OppositeColorScheme<V>
-  'split-by-mode': ColorSchemeLight & ColorSchemeDark
-  'all-variants': BaseColorScheme & ColorSchemeLight & ColorSchemeDark
+export type ColorSchemeStrategyMap<K extends 'light' | 'dark'> = {
+  'base': BaseColorScheme
+  'alternate': BaseColorScheme & OppositeColorScheme<K>
+  'dual-mode': ColorSchemeLight & ColorSchemeDark
+  'complete': BaseColorScheme & ColorSchemeLight & ColorSchemeDark
 }
 
 export type ColorScheme<
-  T extends StrategyType,
-  V extends 'light' | 'dark' = 'light' | 'dark',
-> = ColorSchemeStrategyMap<V>[T]
+  T extends ColorStrategy,
+  K extends 'light' | 'dark' = 'light' | 'dark',
+> = ColorSchemeStrategyMap<K>[T]
 ```
 
 ---

@@ -1,110 +1,108 @@
 import {
-  ColorGroup,
-  CustomColorGroup,
+  type ColorGroup,
+  type CustomColorGroup,
   DynamicColor,
   DynamicScheme,
   MaterialDynamicColors,
 } from '@material/material-color-utilities'
-import { StrategyType } from './create-material-theme'
-import { ColorScheme } from '../types'
 import { camelCase } from '../utils/camel-case'
+import type { ColorScheme, ColorStrategy } from '../types'
 
+/**
+ * @internal Constants
+ */
 const DELIMITER = '_' as const
 const LIGHT_SUFFIX = 'light' as const
 const DARK_SUFFIX = 'dark' as const
 
+// Precompute valid DynamicColor entries
+const validDynamicColors = Object.entries(MaterialDynamicColors).filter(
+  ([, color]) => color instanceof DynamicColor,
+) as [string, DynamicColor][]
+
 /**
  * Processes the colors in a scheme and formats them with a suffix
- * @param scheme
- * @param suffix
- * @param delimiter
- *
- * @example
- * processSchemeColors(scheme, 'light') => { primaryLight: 0xFF0000, ... }
  */
-function processSchemeColors(scheme: DynamicScheme, suffix?: string, delimiter?: string) {
+function processSchemeColors(
+  scheme: DynamicScheme,
+  suffix: string = '',
+  delimiter: string = DELIMITER,
+) {
   return Object.fromEntries(
-    Object.entries(MaterialDynamicColors)
-      .filter(([, color]) => color instanceof DynamicColor)
-      .map(([name, color]) => [
-        camelCase(`${name}${delimiter ?? DELIMITER}${suffix ?? ''}`),
-        (color as DynamicColor).getArgb(scheme),
-      ]),
+    validDynamicColors.map(([name, color]) => [
+      camelCase(`${name}${delimiter}${suffix}`),
+      color.getArgb(scheme),
+    ]),
   )
 }
 
 /**
  * Formats color names using a template system with explicit token replacement
- * @example
- * formatColorName('colorContainer', 'primary') => 'primaryContainer'
  */
 export function formatColorName(
   template: string,
   colorName: string,
-  options: { suffix?: string; delimiter?: string } = {},
-): string {
-  const { suffix = '', delimiter = '_' } = options
+  suffix: string = '',
+  delimiter: string = DELIMITER,
+) {
+  const camelColor = camelCase(colorName)
   const formattedName = template
     .replace(/([A-Z])/g, `${delimiter}$1`)
     .toLowerCase()
-    .replace(/color/g, camelCase(colorName))
+    .replace(/color/g, camelColor)
   return camelCase(`${formattedName}${delimiter}${suffix}`)
 }
 
 /**
  * Processes a color group and formats the color names
- * @param colorName
- * @param group
- * @param suffix
- * @param delimiter
- *
- * @example
  */
 function processColorGroup(
-  colorName: string,
-  group: ColorGroup,
+  baseName: string,
+  colorGroup: ColorGroup,
   suffix?: string,
   delimiter?: string,
 ) {
-  return Object.fromEntries(
-    Object.entries(group).map(([key, value]) => [
-      formatColorName(key, colorName, { suffix, delimiter }),
-      value,
-    ]),
-  )
+  const result: Record<string, number> = {}
+  for (const key in colorGroup) {
+    result[formatColorName(key, baseName, suffix, delimiter)] =
+      colorGroup[key as keyof ColorGroup]
+  }
+  return result
 }
 
 export function processCustomColorGroup(
   colorGroup: CustomColorGroup,
-  options: { isDark?: boolean; strategy?: StrategyType } = {},
+  options: { isDark?: boolean; strategy?: ColorStrategy } = {},
 ) {
-  const { isDark = false, strategy = 'active-only' } = options
-  const currentGroup = isDark ? colorGroup.dark : colorGroup.light
+  const { isDark = false, strategy = 'base' } = options
+  const adaptiveColorGroup = isDark ? colorGroup.dark : colorGroup.light
   const colorName = colorGroup.color.name
 
   switch (strategy) {
-    case 'active-only':
-      return processColorGroup(colorName, currentGroup)
-    case 'active-with-opposite':
-      return {
-        ...processColorGroup(colorName, currentGroup),
-        ...processColorGroup(
-          colorName,
-          isDark ? colorGroup.light : colorGroup.dark,
-          isDark ? LIGHT_SUFFIX : DARK_SUFFIX,
-        ),
-      }
-    case 'split-by-mode':
-      return {
-        ...processColorGroup(colorName, colorGroup.light, LIGHT_SUFFIX),
-        ...processColorGroup(colorName, colorGroup.dark, DARK_SUFFIX),
-      }
-    case 'all-variants':
-      return {
-        ...processColorGroup(colorName, currentGroup),
-        ...processColorGroup(colorName, colorGroup.light, LIGHT_SUFFIX),
-        ...processColorGroup(colorName, colorGroup.dark, DARK_SUFFIX),
-      }
+    case 'base': {
+      return processColorGroup(colorName, adaptiveColorGroup)
+    }
+    case 'alternate': {
+      const main = processColorGroup(colorName, adaptiveColorGroup)
+      const alternateGroup = isDark ? colorGroup.light : colorGroup.dark
+      const alternate = processColorGroup(
+        colorName,
+        alternateGroup,
+        isDark ? LIGHT_SUFFIX : DARK_SUFFIX,
+      )
+      return Object.assign(main, alternate)
+    }
+    case 'dual-mode': {
+      const light = processColorGroup(colorName, colorGroup.light, LIGHT_SUFFIX)
+      const dark = processColorGroup(colorName, colorGroup.dark, DARK_SUFFIX)
+      return Object.assign(light, dark)
+    }
+    case 'complete': {
+      const base = processColorGroup(colorName, adaptiveColorGroup)
+      const light = processColorGroup(colorName, colorGroup.light, LIGHT_SUFFIX)
+      const dark = processColorGroup(colorName, colorGroup.dark, DARK_SUFFIX)
+      return Object.assign(base, light, dark)
+    }
     default:
       throw new Error(`Invalid strategy: ${strategy}`)
   }
@@ -112,15 +110,21 @@ export function processCustomColorGroup(
 
 export function processCustomColorGroups(
   customColors?: CustomColorGroup[],
-  options: { isDark?: boolean; strategy?: StrategyType } = {},
+  options: { isDark?: boolean; strategy?: ColorStrategy } = {},
 ): Record<string, number> {
-  return (customColors || []).reduce(
-    (acc, group) => Object.assign(acc, processCustomColorGroup(group, options)),
-    {},
-  )
+  const result: Record<string, number> = {}
+  if (!customColors) return result
+
+  for (const group of customColors) {
+    const processed = processCustomColorGroup(group, options)
+    for (const key in processed) {
+      result[key] = processed[key]
+    }
+  }
+  return result
 }
 
-export function generateColorScheme<S extends StrategyType, V extends 'light' | 'dark'>(
+export function generateColorScheme<S extends ColorStrategy, M extends 'light' | 'dark'>(
   theme: {
     schemes: {
       light: DynamicScheme
@@ -128,49 +132,46 @@ export function generateColorScheme<S extends StrategyType, V extends 'light' | 
     }
     customColors?: CustomColorGroup[]
   },
-  options: { strategy?: S; variant?: V },
-): ColorScheme<S, V> & Record<string, number> {
+  options: { strategy?: S; mode?: M },
+): ColorScheme<S, M> & Record<string, number> {
   const { schemes, customColors = [] } = theme
-  const { strategy = 'active-only', variant = 'light' } = options
-  const isDark = variant === 'dark'
+  const { strategy = 'base', mode = 'light' } = options
+  const isDark = mode === 'dark'
 
   const currentScheme = isDark ? schemes.dark : schemes.light
-  const customColorScheme = processCustomColorGroups(customColors, {
-    isDark,
-    strategy,
-  })
+  const customColorScheme = processCustomColorGroups(customColors, { isDark, strategy })
 
   switch (strategy) {
-    case 'active-only':
-      return {
-        ...processSchemeColors(currentScheme),
-        ...customColorScheme,
-      } as ColorScheme<S, V> & Record<string, number>
+    case 'base':
+      return Object.assign(
+        processSchemeColors(currentScheme),
+        customColorScheme,
+      ) as ColorScheme<S, M> & Record<string, number>
 
-    case 'active-with-opposite':
-      return {
-        ...processSchemeColors(currentScheme),
-        ...processSchemeColors(
-          isDark ? schemes.light : schemes.dark,
-          isDark ? LIGHT_SUFFIX : DARK_SUFFIX,
-        ),
-        ...customColorScheme,
-      } as ColorScheme<S, V> & Record<string, number>
+    case 'alternate': {
+      const alternateScheme = isDark ? schemes.light : schemes.dark
+      const alternateSuffix = isDark ? LIGHT_SUFFIX : DARK_SUFFIX
+      return Object.assign(
+        processSchemeColors(currentScheme),
+        processSchemeColors(alternateScheme, alternateSuffix),
+        customColorScheme,
+      ) as ColorScheme<S, M> & Record<string, number>
+    }
 
-    case 'split-by-mode':
-      return {
-        ...processSchemeColors(schemes.light, LIGHT_SUFFIX),
-        ...processSchemeColors(schemes.dark, DARK_SUFFIX),
-        ...customColorScheme,
-      } as ColorScheme<S, V> & Record<string, number>
+    case 'dual-mode':
+      return Object.assign(
+        processSchemeColors(schemes.light, LIGHT_SUFFIX),
+        processSchemeColors(schemes.dark, DARK_SUFFIX),
+        customColorScheme,
+      ) as ColorScheme<S, M> & Record<string, number>
 
-    case 'all-variants':
-      return {
-        ...processSchemeColors(currentScheme),
-        ...processSchemeColors(schemes.light, LIGHT_SUFFIX),
-        ...processSchemeColors(schemes.dark, DARK_SUFFIX),
-        ...customColorScheme,
-      } as ColorScheme<S, V> & Record<string, number>
+    case 'complete':
+      return Object.assign(
+        processSchemeColors(currentScheme),
+        processSchemeColors(schemes.light, LIGHT_SUFFIX),
+        processSchemeColors(schemes.dark, DARK_SUFFIX),
+        customColorScheme,
+      ) as ColorScheme<S, M> & Record<string, number>
 
     default:
       throw new Error(`Unexpected strategy: ${strategy}`)

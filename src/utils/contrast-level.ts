@@ -1,10 +1,10 @@
-export enum Contrast {
+export enum ContrastLevel {
   Reduced = -1,
   Default = 0,
   Medium = 0.5,
   High = 1,
 }
 
-export const contrastLevels = Object.values(Contrast).filter(
+export const contrastLevels = Object.values(ContrastLevel).filter(
   (value) => typeof value === 'number',
 ) as number[]
