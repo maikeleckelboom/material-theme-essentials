@@ -3,10 +3,10 @@ import { createImageBitmapFromUrl, createImageDataFromSvg } from './image'
 import { argbFromHex } from '@material/material-color-utilities'
 import type { Seed } from '../scheme/create-material-theme'
 import { HEX_PATTERN, PATH_PATTERN, URL_PATTERN } from './constants'
-import { quantizeAsync } from '../analysis/quantize'
+import { quantize } from '../analysis/quantize'
 
 async function getMostSuitableColor(bitmap: ImageBitmap): Promise<number> {
-  const colorToCount = await quantizeAsync(bitmap)
+  const colorToCount = await quantize(bitmap)
   const [seedColor] = score(colorToCount, { desired: 1 })
   return seedColor
 }

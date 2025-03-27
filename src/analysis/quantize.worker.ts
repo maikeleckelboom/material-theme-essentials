@@ -1,5 +1,5 @@
 import { createImageDataFromBitmap, createPixelsArray } from '../utils/image'
-import { isStartEvent, quantize } from './quantize'
+import { quantizeSync } from './quantize'
 
 export interface QuantizeWorkerOptions {
   maxColors?: number
@@ -28,11 +28,23 @@ export type QuantizeWorker = Omit<Worker, 'postMessage'> & {
   postMessage(message: QuantizeWorkerEvent['data'], transfer?: Transferable[]): void
 }
 
+export function createQuantizeWorker(): QuantizeWorker {
+  return new Worker(new URL('./quantize.worker.ts', import.meta.url), { type: 'module' })
+}
+
+export function isStartEvent(event: QuantizeWorkerEvent): event is QuantizeWorkerStartEvent {
+  return event.data.type === 'start'
+}
+
+export function isDoneEvent(event: QuantizeWorkerEvent): event is QuantizeWorkerDoneEvent {
+  return event.data.type === 'done'
+}
+
 function onMessage(event: QuantizeWorkerEvent) {
   if (!isStartEvent(event)) return
   const imageData = createImageDataFromBitmap(event.data.image)
   const pixels = createPixelsArray(imageData)
-  const colorToCount = quantize(pixels, event.data.maxColors)
+  const colorToCount = quantizeSync(pixels, event.data.maxColors)
   self.postMessage({
     type: 'done',
     colorToCount,

@@ -1,30 +1,21 @@
 import { QuantizerCelebi } from '@material/material-color-utilities'
-import type {
-  QuantizeWorker,
-  QuantizeWorkerDoneEvent,
-  QuantizeWorkerEvent,
+import {
+  createQuantizeWorker,
+  isDoneEvent,
   QuantizeWorkerOptions,
   QuantizeWorkerResult,
-  QuantizeWorkerStartEvent,
 } from './quantize.worker'
 
-export function createQuantizeWorker(): QuantizeWorker {
-  return new Worker(new URL('./quantize.worker.ts', import.meta.url), { type: 'module' })
-}
+export const DEFAULT_QUANTIZE_MAX_COLORS: number = 128 as const
 
-export function isStartEvent(event: QuantizeWorkerEvent): event is QuantizeWorkerStartEvent {
-  return event.data.type === 'start'
-}
-
-export function isDoneEvent(event: QuantizeWorkerEvent): event is QuantizeWorkerDoneEvent {
-  return event.data.type === 'done'
-}
-
-export function quantize(pixels: number[], maxColors: number = 200): Map<number, number> {
+export function quantizeSync(
+  pixels: number[],
+  maxColors: number = DEFAULT_QUANTIZE_MAX_COLORS,
+): Map<number, number> {
   return QuantizerCelebi.quantize(pixels, maxColors)
 }
 
-export async function quantizeAsync(
+export async function quantize(
   image: ImageBitmap,
   options: QuantizeWorkerOptions = {},
 ): Promise<QuantizeWorkerResult> {

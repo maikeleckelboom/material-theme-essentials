@@ -9,18 +9,46 @@ import { StrategyType } from './create-material-theme'
 import { ColorScheme } from '../types'
 import { camelCase } from '../utils/camel-case'
 
+const DELIMITER = '_' as const
 const LIGHT_SUFFIX = 'light' as const
 const DARK_SUFFIX = 'dark' as const
 
-function processSchemeColors(scheme: DynamicScheme, suffix?: string) {
+/**
+ * Processes the colors in a scheme and formats them with a suffix
+ * @param scheme
+ * @param suffix
+ * @param delimiter
+ *
+ * @example
+ * processSchemeColors(scheme, 'light') => { primaryLight: 0xFF0000, ... }
+ */
+function processSchemeColors(scheme: DynamicScheme, suffix?: string, delimiter?: string) {
   return Object.fromEntries(
     Object.entries(MaterialDynamicColors)
       .filter(([, color]) => color instanceof DynamicColor)
       .map(([name, color]) => [
-        camelCase(`${name}_${suffix ?? ''}`),
+        camelCase(`${name}${delimiter ?? DELIMITER}${suffix ?? ''}`),
         (color as DynamicColor).getArgb(scheme),
       ]),
   )
+}
+
+/**
+ * Formats color names using a template system with explicit token replacement
+ * @example
+ * formatColorName('colorContainer', 'primary') => 'primaryContainer'
+ */
+export function formatColorName(
+  template: string,
+  colorName: string,
+  options: { suffix?: string; delimiter?: string } = {},
+): string {
+  const { suffix = '', delimiter = '_' } = options
+  const formattedName = template
+    .replace(/([A-Z])/g, `${delimiter}$1`)
+    .toLowerCase()
+    .replace(/color/g, camelCase(colorName))
+  return camelCase(`${formattedName}${delimiter}${suffix}`)
 }
 
 /**
@@ -44,24 +72,6 @@ function processColorGroup(
       value,
     ]),
   )
-}
-
-/**
- * Formats color names using a template system with explicit token replacement
- * @example
- * formatColorName('colorContainer', 'primary') => 'primaryContainer'
- */
-export function formatColorName(
-  template: string,
-  colorName: string,
-  options: { suffix?: string; delimiter?: string } = {},
-): string {
-  const { suffix = '', delimiter = '_' } = options
-  const formattedName = template
-    .replace(/([A-Z])/g, `${delimiter}$1`)
-    .toLowerCase()
-    .replace(/color/g, camelCase(colorName))
-  return camelCase(`${formattedName}${delimiter}${suffix}`)
 }
 
 export function processCustomColorGroup(
