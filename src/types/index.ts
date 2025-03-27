@@ -63,8 +63,6 @@ export interface MaterialColorScheme {
   onTertiaryFixedVariant: number
 }
 
-export type MaterialColorKeys = keyof MaterialColorScheme
-
 export type ColorSchemeLight = {
   [K in keyof MaterialColorScheme as `${K}Light`]: number
 }

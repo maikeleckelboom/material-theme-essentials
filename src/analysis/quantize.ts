@@ -6,10 +6,10 @@ import type {
   QuantizeWorkerOptions,
   QuantizeWorkerResult,
   QuantizeWorkerStartEvent,
-} from './quantize-worker'
+} from './quantize.worker'
 
 export function createQuantizeWorker(): QuantizeWorker {
-  return new Worker(new URL('./quantize-worker.ts', import.meta.url), { type: 'module' })
+  return new Worker(new URL('./quantize.worker.ts', import.meta.url), { type: 'module' })
 }
 
 export function isStartEvent(event: QuantizeWorkerEvent): event is QuantizeWorkerStartEvent {

@@ -1,5 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { resolveColor } from '../src/utils/resolve-color'
+import { resolveSourceColor } from '../src/utils/resolve-source-color'
 import { argbFromHex } from '@material/material-color-utilities'
 
 const IMAGE_PATH: string = '../../../assets/wallpaper-small.webp'
@@ -17,37 +17,37 @@ beforeEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('resolveColor', () => {
+describe('resolveSourceColor', () => {
   it('returns the seed if it is a number', async () => {
     const seed = 0xff00ff
-    const result = await resolveColor(seed)
+    const result = await resolveSourceColor(seed)
     expect(result).toBe(seed)
   })
 
   it('processes a hex string seed', async () => {
     const seed = '#ff00ff'
     const expected = argbFromHex(seed)
-    const result = await resolveColor(seed)
+    const result = await resolveSourceColor(seed)
     expect(result).toBe(expected)
   })
 
   it('processes a URL seed', async () => {
-    const result = await resolveColor(IMAGE_URL)
+    const result = await resolveSourceColor(IMAGE_URL)
     expect(result).toBeDefined()
   })
 
   it('processes a relative path seed', async () => {
-    const result = await resolveColor(IMAGE_PATH)
+    const result = await resolveSourceColor(IMAGE_PATH)
     expect(result).toBeDefined()
   })
 
   it('throws an error for an invalid string seed', async () => {
     const invalidSeed = 'invalid-seed'
-    await expect(resolveColor(invalidSeed)).rejects.toThrow()
+    await expect(resolveSourceColor(invalidSeed)).rejects.toThrow()
   })
 
   it('processes a Blob seed', async () => {
-    const result = await resolveColor(blob)
+    const result = await resolveSourceColor(blob)
     expect(result).toBeDefined()
   })
 
@@ -57,7 +57,7 @@ describe('resolveColor', () => {
     image.crossOrigin = 'anonymous'
     await image.decode()
     const bitmap = await createImageBitmap(image)
-    const result = await resolveColor(bitmap)
+    const result = await resolveSourceColor(bitmap)
     expect(result).toBeDefined()
   })
 
@@ -66,7 +66,7 @@ describe('resolveColor', () => {
     image.src = IMAGE_URL
     image.crossOrigin = 'anonymous'
     await image.decode()
-    const result = await resolveColor(image)
+    const result = await resolveSourceColor(image)
     expect(result).toBeDefined()
   })
 
@@ -76,7 +76,7 @@ describe('resolveColor', () => {
     video.muted = true
     video.playsInline = true
     video.onload = () => {
-      const result = resolveColor(video)
+      const result = resolveSourceColor(video)
       expect(result).toBeDefined()
     }
   })
@@ -88,7 +88,7 @@ describe('resolveColor', () => {
     video.playsInline = true
     video.onload = () => {
       const frame = new VideoFrame(video)
-      const result = resolveColor(frame)
+      const result = resolveSourceColor(frame)
       expect(result).toBeDefined()
     }
   })
@@ -101,7 +101,7 @@ describe('resolveColor', () => {
     rect.setAttribute('fill', '#ff9b00')
     svgSeed.appendChild(rect)
     const expected = 0xffff9b00
-    const result = await resolveColor(svgSeed)
+    const result = await resolveSourceColor(svgSeed)
     expect(result).toBe(expected)
   })
 
@@ -110,7 +110,7 @@ describe('resolveColor', () => {
     const context = canvas.getContext('2d')!
     context.fillStyle = '#ff0000'
     context.fillRect(0, 0, 100, 100)
-    const result = await resolveColor(canvas)
+    const result = await resolveSourceColor(canvas)
     expect(result).toBe(0xffff0000)
   })
 
@@ -121,7 +121,7 @@ describe('resolveColor', () => {
     const context = canvas.getContext('2d')!
     context.fillStyle = '#00ff00'
     context.fillRect(0, 0, 100, 100)
-    const result = await resolveColor(canvas)
+    const result = await resolveSourceColor(canvas)
     expect(result).toBe(0xff00ff00)
   })
 
@@ -131,7 +131,7 @@ describe('resolveColor', () => {
     context.fillStyle = '#0000ff'
     context.fillRect(0, 0, 100, 100)
     const imageData = context.getImageData(0, 0, 100, 100)
-    const result = await resolveColor(imageData)
+    const result = await resolveSourceColor(imageData)
     expect(result).toBe(0xff0000ff)
   })
 })

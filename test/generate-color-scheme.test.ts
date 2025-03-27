@@ -126,7 +126,7 @@ describe('generateColorScheme', () => {
       staticColors: [
         {
           name: 'Hello this is my color 1',
-          value: argbFromHex('#ZZZZZZ'),
+          value: argbFromHex('#ffffff'),
         } as const,
         {
           name: 'Hello this is my color 2',
@@ -136,19 +136,18 @@ describe('generateColorScheme', () => {
     })
     const colorScheme = generateColorScheme(theme, { strategy: 'active-only' })
     expect(colorScheme).toHaveProperty('primary')
-
     expect(colorScheme).toHaveProperty('helloThisIsMyColor1')
-    console.log(colorScheme)
+    expect(colorScheme).toHaveProperty('helloThisIsMyColor2')
   })
 
   it('should handle large number of static colors', async () => {
-    const largeStaticColors = Array.from({ length: 100 }, (_, i) => ({
+    const staticColors = Array.from({ length: 100 }, (_, i) => ({
       name: `Color ${i}`,
       value: argbFromHex('#123456'),
     }))
     theme = await createMaterialTheme({
       primary: primaryColor,
-      staticColors: largeStaticColors,
+      staticColors,
     })
     const colorScheme = generateColorScheme(theme, { strategy: 'active-only' })
     expect(colorScheme).toHaveProperty('primary')

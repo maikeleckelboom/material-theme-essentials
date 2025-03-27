@@ -19,37 +19,37 @@ npm install @material/material-color-utilities material-theme-essentials
 ```
 ---
 
-## resolveColor
+## resolveSourceColor
 
 Convert the seed value to a color value:
 
 ```ts
-import { resolveColor, argbFromHex } from 'material-theme-essentials'
+import { resolveSourceColor, argbFromHex } from 'material-theme-essentials'
 
 // Numeric color
-const numericColor = await resolveColor(0xff00ff)
+const numericColor = await resolveSourceColor(0xff00ff)
 
 // Hex string
-const hexColor = await resolveColor('#ff00ff')
+const hexColor = await resolveSourceColor('#ff00ff')
 
 // Image URL
-const imageColor = await resolveColor('https://example.com/image.jpg')
+const imageColor = await resolveSourceColor('https://example.com/image.jpg')
 
 // SVG element
 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
 // ... draw on SVG ...
-const svgColor = await resolveColor(svg)
+const svgColor = await resolveSourceColor(svg)
 
 // Canvas element
 const canvas = document.createElement('canvas')
 // ... draw on canvas ...
-const canvasColor = await resolveColor(canvas)
+const canvasColor = await resolveSourceColor(canvas)
 
 // Video frame
 const video = document.createElement('video')
 video.src = 'https://example.com/video.mp4'
 video.onloadeddata = async () => {
-  const videoColor = await resolveColor(video)
+  const videoColor = await resolveSourceColor(video)
 }
 ```
 
@@ -77,7 +77,7 @@ const theme = await seedTheme('https://example.com/image.jpg', {
 
 ## API Reference
 
-### resolveColor(seed: Seed): Promise<Color>
+### resolveSourceColor(seed: Seed): Promise<Color>
 
 __Converts a seed value to an ARGB color value.__
 

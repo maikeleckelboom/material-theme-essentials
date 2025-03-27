@@ -1,6 +1,6 @@
 import { customColor, TonalPalette } from '@material/material-color-utilities'
 import { createDynamicScheme, Variant } from './create-dynamic-scheme'
-import { resolveColor } from '../utils/resolve-color'
+import { resolveSourceColor } from '../utils/resolve-source-color'
 import { Theme } from '../types'
 
 export interface CorePaletteColors {
@@ -71,7 +71,7 @@ export async function createMaterialTheme(
     ? optionsOrSeed
     : { seed: optionsOrSeed, ...options }
 
-  const source = await resolveColor(opts.seed || opts.primary!)
+  const source = await resolveSourceColor(opts.seed || opts.primary!)
 
   const {
     primary,

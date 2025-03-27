@@ -10,3 +10,17 @@ export function camelCase<S extends string>(str: S): CamelCase<S> {
     )
     .join('') as CamelCase<S>
 }
+
+/*
+
+import type { CamelCase } from 'type-fest'
+import { camelCase as toCamelCase, type PascalCaseOptions } from 'change-case'
+
+export function camelCase<S extends string>(
+  str: S,
+  options?: PascalCaseOptions,
+): CamelCase<S> {
+  return toCamelCase(str, options) as CamelCase<S>
+}
+
+*/
