@@ -212,11 +212,11 @@ export type OppositeColorScheme<T extends 'light' | 'dark'> = T extends 'dark'
 export type ColorSchemeStrategyMap<K extends 'light' | 'dark'> = {
   'default': BaseColorScheme
   'contextual': BaseColorScheme & OppositeColorScheme<K>
-  'dual': ColorSchemeLight & ColorSchemeDark
+  'split': ColorSchemeLight & ColorSchemeDark
   'comprehensive': BaseColorScheme & ColorSchemeLight & ColorSchemeDark
 }
 
-export type ColorScheme<
+export type ColorSchemeStrategy<
   T extends Strategy,
   K extends 'light' | 'dark' = 'light' | 'dark',
 > = ColorSchemeStrategyMap<K>[T]

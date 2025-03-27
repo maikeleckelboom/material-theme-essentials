@@ -18,7 +18,7 @@ describe('generateColorScheme', () => {
     },
   ]
 
-  const strategies: Strategy[] = ['default', 'contextual', 'dual', 'comprehensive']
+  const strategies: Strategy[] = ['default', 'contextual', 'split', 'comprehensive']
 
   const customColorKeys = [
     'myTestColor',
@@ -48,7 +48,7 @@ describe('generateColorScheme', () => {
         const strategyTransformations: Record<Strategy, (key: string) => string[]> = {
           default: (key) => [key],
           contextual: (key) => [key, `${key}Dark`],
-          dual: (key) => [`${key}Light`, `${key}Dark`],
+          split: (key) => [`${key}Light`, `${key}Dark`],
           comprehensive: (key) => [key, `${key}Light`, `${key}Dark`],
         }
 
@@ -78,7 +78,7 @@ describe('generateColorScheme', () => {
             expect(colorScheme).toHaveProperty(`${key}Dark`)
           })
           break
-        case 'dual':
+        case 'split':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(`${key}Light`)
             expect(colorScheme).toHaveProperty(`${key}Dark`)

@@ -5,7 +5,7 @@ import {
   TonalPalette,
 } from '@material/material-color-utilities'
 
-export interface MaterialColorScheme {
+export interface ColorScheme {
   primaryPaletteKeyColor: number
   secondaryPaletteKeyColor: number
   tertiaryPaletteKeyColor: number
@@ -63,27 +63,27 @@ export interface MaterialColorScheme {
 }
 
 export type ColorSchemeLight = {
-  [K in keyof MaterialColorScheme as `${K}Light`]: number
+  [K in keyof ColorScheme as `${K}Light`]: number
 }
 
 export type ColorSchemeDark = {
-  [K in keyof MaterialColorScheme as `${K}Dark`]: number
+  [K in keyof ColorScheme as `${K}Dark`]: number
 }
 
-export type ColorSchemeOpposite<T extends 'light' | 'dark'> = T extends 'dark'
+export type ColorSchemeAlternate<T extends 'light' | 'dark'> = T extends 'dark'
   ? ColorSchemeDark
   : ColorSchemeLight
 
 export type ColorSchemeStrategyMap<V extends 'light' | 'dark' = 'light' | 'dark'> = {
-  default: MaterialColorScheme
-  contextual: MaterialColorScheme & ColorSchemeOpposite<V>
-  dual: ColorSchemeLight & ColorSchemeDark
-  comprehensive: MaterialColorScheme & ColorSchemeLight & ColorSchemeDark
+  default: ColorScheme
+  contextual: ColorScheme & ColorSchemeAlternate<V>
+  split: ColorSchemeLight & ColorSchemeDark
+  comprehensive: ColorScheme & ColorSchemeLight & ColorSchemeDark
 }
 
 export type Strategy = keyof ColorSchemeStrategyMap
 
-export type ColorScheme<
+export type ColorSchemeStrategy<
   T extends Strategy,
   K extends 'light' | 'dark',
 > = ColorSchemeStrategyMap<K>[T]

@@ -6,9 +6,9 @@ import {
   DynamicScheme,
   MaterialDynamicColors,
 } from '@material/material-color-utilities'
-import { ColorScheme, SchemeGenerationParams, Strategy } from '../types'
+import { ColorSchemeStrategy, SchemeGenerationParams, Strategy } from '../types'
 import camelCase from 'camelcase'
-import {  StaticColor } from './create-material-theme'
+import { StaticColor } from './create-material-theme'
 
 // Constants
 const DELIM = '_' as const
@@ -16,10 +16,7 @@ const LT_SUF = 'light' as const
 const DK_SUF = 'dark' as const
 
 /** Process scheme colors with optional suffix */
-export function processScheme(
-  scheme: DynamicScheme,
-  suffix: string = '',
-) {
+export function processScheme(scheme: DynamicScheme, suffix: string = '') {
   return Object.fromEntries(
     Object.entries(MaterialDynamicColors)
       .filter(([, color]) => color instanceof DynamicColor)
@@ -28,11 +25,7 @@ export function processScheme(
 }
 
 /** Format color name using template pattern */
-export function formatName(
-  pattern: string,
-  baseName: string,
-  suffix: string = '',
-) {
+export function formatName(pattern: string, baseName: string, suffix: string = '') {
   return camelCase(
     `${pattern
       .replace(/([A-Z])/g, `${DELIM}$1`)
@@ -68,7 +61,7 @@ export function processCustomColorGroup(
       const alt = processColorGroup(name, altGroup, isDark ? LT_SUF : DK_SUF)
       return { ...main, ...alt }
     }
-    case 'dual':
+    case 'split':
       return {
         ...processColorGroup(name, group.light, LT_SUF),
         ...processColorGroup(name, group.dark, DK_SUF),
@@ -76,7 +69,7 @@ export function processCustomColorGroup(
     case 'comprehensive':
       return {
         ...processCustomColorGroup(group, { ...opts, strategy: 'default' }),
-        ...processCustomColorGroup(group, { ...opts, strategy: 'dual' }),
+        ...processCustomColorGroup(group, { ...opts, strategy: 'split' }),
       }
     default:
       throw new Error(`Invalid strategy: ${strategy}`)
@@ -97,14 +90,13 @@ export function processCustomGroups(
   return result
 }
 
-export function staticColor(sourceColor: number, staticColor: StaticColor):CustomColorGroup{
+export function staticColor(sourceColor: number, staticColor: StaticColor): CustomColorGroup {
   return customColor(sourceColor, {
     name: staticColor.name,
     value: staticColor.value,
     blend: !!staticColor.blend,
   })
 }
-
 
 /** Strategy configuration setup */
 type StrategySetup = { scheme: DynamicScheme; suffix?: string }[]
@@ -122,7 +114,7 @@ function getStrategySetup<S extends Strategy>(
   const configs: Record<Strategy, StrategySetup> = {
     default: [{ scheme: mainScheme }],
     contextual: [{ scheme: mainScheme }, { scheme: altScheme, suffix: altSuffix }],
-    dual: [
+    split: [
       { scheme: palettes.light, suffix: LT_SUF },
       { scheme: palettes.dark, suffix: DK_SUF },
     ],
@@ -145,7 +137,7 @@ function getStrategySetup<S extends Strategy>(
 export function generateColorScheme<S extends Strategy, M extends 'light' | 'dark'>(
   config: SchemeGenerationParams,
   opts: { strategy?: S; isDark?: boolean } = {},
-): ColorScheme<S, M> & Record<string, number> {
+): ColorSchemeStrategy<S, M> & Record<string, number> {
   const { schemes, customColors = [] } = config
   const { strategy = 'default', isDark = false } = opts
   const setup = getStrategySetup(strategy, isDark, schemes)
