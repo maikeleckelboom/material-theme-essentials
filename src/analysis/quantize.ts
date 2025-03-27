@@ -16,7 +16,7 @@ export function quantizeSync(
 }
 
 export async function quantize(
-  image: ImageBitmap,
+  imageBitmap: ImageBitmap,
   options: QuantizeWorkerOptions = {},
 ): Promise<QuantizeWorkerResult> {
   const worker = createQuantizeWorker()
@@ -45,6 +45,6 @@ export async function quantize(
       worker.terminate()
     }
 
-    worker.postMessage({ type: 'start', image, ...options }, [image])
+    worker.postMessage({ type: 'start', image: imageBitmap, ...options }, [imageBitmap])
   })
 }

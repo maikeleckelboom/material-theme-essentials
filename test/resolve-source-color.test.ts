@@ -2,9 +2,9 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { resolveSourceColor } from '../src/utils/resolve-source-color'
 import { argbFromHex } from '@material/material-color-utilities'
 
-const IMAGE_PATH: string = '../../../assets/wallpaper-small.webp'
-const IMAGE_URL: string = 'https://i.ibb.co/hV3qmLK/Cloudtion-Example.jpg'
-const VIDEO_URL: string = 'https://www.w3schools.com/html/mov_bbb.mp4'
+const IMAGE_PATH: string = new URL('./assets/webp_image.webp', import.meta.url).href
+const IMAGE_URL: string =  new URL('./assets/jpeg_image.jpg', import.meta.url).href
+const VIDEO_URL: string = new URL('./assets/mp4_video.mp4', import.meta.url).href
 
 let blob: Blob
 
