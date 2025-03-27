@@ -8,7 +8,7 @@ import {
 
 export const DEFAULT_QUANTIZE_MAX_COLORS: number = 128 as const
 
-export function quantizeSync(
+export function quantizePixels(
   pixels: number[],
   maxColors: number = DEFAULT_QUANTIZE_MAX_COLORS,
 ): Map<number, number> {
@@ -23,28 +23,51 @@ export async function quantize(
   const { signal } = options
 
   return new Promise<QuantizeWorkerResult>((resolve, reject) => {
-    const abortHandler = () => {
+    let isCleanedUp = false
+
+    const cleanup = () => {
+      if (isCleanedUp) return
+      isCleanedUp = true
+
+      signal?.removeEventListener('abort', abortHandler)
+
       worker.terminate()
-      reject(new DOMException('The operation was aborted.', 'AbortError'))
+      worker.onmessage = null
+      worker.onerror = null
     }
 
-    if (signal?.aborted) return abortHandler()
-    signal?.addEventListener('abort', abortHandler, { once: true })
+    const abortHandler = () => {
+      cleanup()
+      reject(signal?.reason || new DOMException('Operation aborted', 'AbortError'))
+    }
 
     worker.onmessage = (event) => {
       if (isDoneEvent(event)) {
-        signal?.removeEventListener('abort', abortHandler)
+        cleanup()
         resolve(event.data.colorToCount)
-        worker.terminate()
       }
     }
 
     worker.onerror = (error) => {
-      signal?.removeEventListener('abort', abortHandler)
-      reject(error)
-      worker.terminate()
+      cleanup()
+      reject(error.error || new Error('Worker error'))
     }
 
-    worker.postMessage({ type: 'start', image: imageBitmap, ...options }, [imageBitmap])
+    if (signal?.aborted) {
+      abortHandler()
+      return
+    }
+
+    signal?.addEventListener('abort', abortHandler, { once: true })
+
+    try {
+      worker.postMessage(
+        { type: 'start', image: imageBitmap, maxColors: options.maxColors },
+        [imageBitmap],
+      )
+    } catch (error) {
+      cleanup()
+      reject(error)
+    }
   })
 }

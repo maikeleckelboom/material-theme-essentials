@@ -2,8 +2,8 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { resolveSourceColor } from '../src/scheme/resolve-source-color'
 import { argbFromHex } from '@material/material-color-utilities'
 
-const IMAGE_URL: string =  new URL('./assets/webp_image.webp', import.meta.url).href
-const VIDEO_URL: string = new URL('./assets/mp4_video.mp4', import.meta.url).href
+export const IMAGE_URL: string =  new URL('./assets/webp_image.webp', import.meta.url).href
+export const VIDEO_URL: string = new URL('./assets/mp4_video.mp4', import.meta.url).href
 
 let blob: Blob
 
@@ -133,4 +133,5 @@ describe('resolveSourceColor', () => {
     const result = await resolveSourceColor(imageData)
     expect(result).toBe(0xff0000ff)
   })
+
 })

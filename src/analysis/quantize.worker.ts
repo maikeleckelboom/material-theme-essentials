@@ -1,5 +1,5 @@
 import { createImageDataFromBitmap, createPixelsArray } from '../utils/image'
-import { quantizeSync } from './quantize'
+import { quantizePixels } from './quantize'
 
 export interface QuantizeWorkerOptions {
   maxColors?: number
@@ -41,14 +41,15 @@ export function isDoneEvent(event: QuantizeWorkerEvent): event is QuantizeWorker
 }
 
 function onMessage(event: QuantizeWorkerEvent) {
-  if (!isStartEvent(event)) return
-  const imageData = createImageDataFromBitmap(event.data.image)
-  const pixels = createPixelsArray(imageData)
-  const colorToCount = quantizeSync(pixels, event.data.maxColors)
-  self.postMessage({
-    type: 'done',
-    colorToCount,
-  })
+  if (isStartEvent(event)) {
+    const imageData = createImageDataFromBitmap(event.data.image)
+    const pixels = createPixelsArray(imageData)
+    const colorToCount = quantizePixels(pixels, event.data.maxColors)
+    self.postMessage({
+      type: 'done',
+      colorToCount,
+    })
+  }
 }
 
 if (typeof self !== 'undefined') {

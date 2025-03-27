@@ -8,7 +8,7 @@ and color scheme transformations.
 ## Features
 
 - 🎨 Convert multiple seed types to color values (images, videos, canvases, etc.)
-- 🌗 Generate complete Material Design color schemes
+- 🌗 Generate full Material Design color schemes
 - 🛠 Custom color blending and strategy-based scheme generation
 - 📱 Cross-environment support (Browser, Node.js with polyfills)
 
@@ -55,10 +55,10 @@ video.onloadeddata = async () => {
 
 ## seedTheme & toColorScheme
 
-Create complete color schemes with different generation strategies:
+Create full color schemes with different generation strategies:
 
 ```ts
-import { seedTheme, toColorScheme, ColorStrategy } from 'material-theme-essentials'
+import { seedTheme, toColorScheme, Strategy } from 'material-theme-essentials'
 
 // Create theme
 const theme = await seedTheme('https://example.com/image.jpg', {
@@ -100,7 +100,7 @@ Supported seed types:
 
 ### seedTheme(seed: ThemeSeed): Promise<Theme>
 
-__Generates a base theme from a seed object.__
+__Generates a system theme from a seed object.__
 
 ```ts
 export interface MaterialTheme {
@@ -125,20 +125,20 @@ export interface MaterialTheme {
 
 ### toColorScheme(theme: Theme, options?: SchemeOptions)
 
-__Generates a complete color scheme from a base theme.__
+__Generates a full color scheme from a system theme.__
 
 Configuration options:
 
 ```ts
 
 const scheme = toColorScheme(theme, {
-  strategy: ColorStrategy
+  strategy: Strategy
 })
 ````
 
 ## TypeScript Reference
 ```ts
-import type { ColorStrategy } from 'material-theme-essentials'
+import type { Strategy } from 'material-theme-essentials'
 
 export interface BaseColorScheme {
   primaryPaletteKeyColor: number
@@ -210,14 +210,14 @@ export type OppositeColorScheme<T extends 'light' | 'dark'> = T extends 'dark'
   : ColorSchemeLight
 
 export type ColorSchemeStrategyMap<K extends 'light' | 'dark'> = {
-  'base': BaseColorScheme
-  'alternate': BaseColorScheme & OppositeColorScheme<K>
-  'dual-mode': ColorSchemeLight & ColorSchemeDark
-  'complete': BaseColorScheme & ColorSchemeLight & ColorSchemeDark
+  'system': BaseColorScheme
+  'adaptive': BaseColorScheme & OppositeColorScheme<K>
+  'split': ColorSchemeLight & ColorSchemeDark
+  'full': BaseColorScheme & ColorSchemeLight & ColorSchemeDark
 }
 
 export type ColorScheme<
-  T extends ColorStrategy,
+  T extends Strategy,
   K extends 'light' | 'dark' = 'light' | 'dark',
 > = ColorSchemeStrategyMap<K>[T]
 ```

@@ -2,7 +2,7 @@ import { createMaterialTheme } from '../src/scheme/create-material-theme'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { generateColorScheme } from '../src/scheme/generate-color-scheme'
 import { argbFromHex } from '@material/material-color-utilities'
-import { ColorStrategy } from '../src/types'
+import { Strategy } from '../src/types'
 
 describe('generateColorScheme', () => {
   const primaryColor = argbFromHex('#4588dc')
@@ -18,7 +18,7 @@ describe('generateColorScheme', () => {
     },
   ]
 
-  const strategies: ColorStrategy[] = ['base', 'alternate', 'dual-mode', 'complete']
+  const strategies: Strategy[] = ['system', 'adaptive', 'split', 'full']
 
   const customColorKeys = [
     'myTestColor',
@@ -45,11 +45,11 @@ describe('generateColorScheme', () => {
       const colorScheme = generateColorScheme(theme, { strategy })
 
       const expectedCustomKeys: string[] = (() => {
-        const strategyTransformations: Record<ColorStrategy, (key: string) => string[]> = {
-          base: (key) => [key],
-          alternate: (key) => [key, `${key}Dark`],
-          'dual-mode': (key) => [`${key}Light`, `${key}Dark`],
-          complete: (key) => [key, `${key}Light`, `${key}Dark`],
+        const strategyTransformations: Record<Strategy, (key: string) => string[]> = {
+          system: (key) => [key],
+          adaptive: (key) => [key, `${key}Dark`],
+          split: (key) => [`${key}Light`, `${key}Dark`],
+          full: (key) => [key, `${key}Light`, `${key}Dark`],
         }
 
         return customColorKeys.flatMap((key) => strategyTransformations[strategy](key))
@@ -67,24 +67,24 @@ describe('generateColorScheme', () => {
       ]
 
       switch (strategy) {
-        case 'base':
+        case 'system':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(key)
           })
           break
-        case 'alternate':
+        case 'adaptive':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(key)
             expect(colorScheme).toHaveProperty(`${key}Dark`)
           })
           break
-        case 'dual-mode':
+        case 'split':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(`${key}Light`)
             expect(colorScheme).toHaveProperty(`${key}Dark`)
           })
           break
-        case 'complete':
+        case 'full':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(key)
             expect(colorScheme).toHaveProperty(`${key}Light`)
@@ -136,7 +136,7 @@ describe('generateColorScheme', () => {
       primary: primaryColor,
       staticColors,
     })
-    const colorScheme = generateColorScheme(theme, { strategy: 'base' })
+    const colorScheme = generateColorScheme(theme, { strategy: 'system' })
     expect(colorScheme).toHaveProperty('primary')
   })
 })

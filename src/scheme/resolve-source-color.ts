@@ -1,4 +1,4 @@
-import { score } from '../analysis/score'
+import { score } from '../utils/score'
 import { createImageBitmapFromUrl, createImageDataFromSvg } from '../utils/image'
 import { argbFromHex } from '@material/material-color-utilities'
 import type { Seed } from './create-material-theme'

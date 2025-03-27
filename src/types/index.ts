@@ -74,23 +74,18 @@ export type ColorSchemeOpposite<T extends 'light' | 'dark'> = T extends 'dark'
   ? ColorSchemeDark
   : ColorSchemeLight
 
-export type ColorSchemeStrategyMap<V extends 'light' | 'dark'> = {
-  'base': MaterialColorScheme
-  'alternate': MaterialColorScheme & ColorSchemeOpposite<V>
-  'dual-mode': ColorSchemeLight & ColorSchemeDark
-  'complete': MaterialColorScheme & ColorSchemeLight & ColorSchemeDark
+export type ColorSchemeStrategyMap<V extends 'light' | 'dark' = 'light' | 'dark'> = {
+  system: MaterialColorScheme
+  adaptive: MaterialColorScheme & ColorSchemeOpposite<V>
+  split: ColorSchemeLight & ColorSchemeDark
+  full: MaterialColorScheme & ColorSchemeLight & ColorSchemeDark
 }
 
-
-export type ColorStrategy =
-  | 'base'
-  | 'alternate'
-  | 'dual-mode'
-  | 'complete'
+export type Strategy = keyof ColorSchemeStrategyMap
 
 export type ColorScheme<
-  T extends ColorStrategy,
-  K extends 'light' | 'dark' = 'light' | 'dark',
+  T extends Strategy,
+  K extends 'light' | 'dark',
 > = ColorSchemeStrategyMap<K>[T]
 
 export interface Theme {
@@ -113,5 +108,10 @@ export interface Theme {
 }
 
 export type SchemeGenerationParams = Pick<Theme, 'schemes'> & {
-  customColors?: Theme['customColors'];
-};
+  customColors?: Theme['customColors']
+}
+
+export type PaletteGenerationParams = {
+  palettes?: Partial<Theme['palettes']>
+  customColors?: Theme['customColors']
+}

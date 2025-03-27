@@ -1,5 +1,5 @@
-export { contrastColor, contrastRatio, ratioOfTones } from './analysis/contrast'
-export { fixIfDisliked, isDisliked } from './analysis/dislike'
+export { contrastColor, contrastRatio, ratioOfTones } from './utils/contrast'
+export { fixIfDisliked, isDisliked } from './utils/dislike'
 export { Variant, getSchemeForVariant } from './scheme/create-dynamic-scheme'
 export { toHct, toHctArray, fromHct, fromHctArray } from './utils/hct'
-export { score, type ScoreOptions } from './analysis/score'
+export { score, type ScoreOptions } from './utils/score'

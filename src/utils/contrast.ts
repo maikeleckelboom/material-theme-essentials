@@ -1,13 +1,6 @@
-import {
-  argbFromLstar,
-  Contrast,
-  lstarFromArgb,
-} from '@material/material-color-utilities'
+import { argbFromLstar, Contrast, lstarFromArgb } from '@material/material-color-utilities'
 
-function findMaxContrastVariant(
-  baseTone: number,
-  direction: 'darker' | 'lighter',
-): number {
+function findMaxContrastVariant(baseTone: number, direction: 'darker' | 'lighter'): number {
   const isDarker = direction === 'darker'
   let [low, high] = isDarker ? [0, baseTone] : [baseTone, 100]
   let bestTone = baseTone
@@ -18,11 +11,17 @@ function findMaxContrastVariant(
 
     if (ratio > 1) {
       bestTone = mid
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      isDarker ? (high = mid - 1) : (low = mid + 1)
+      if (isDarker) {
+        high = mid - 1
+      } else {
+        low = mid + 1
+      }
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      isDarker ? (low = mid + 1) : (high = mid - 1)
+      if (isDarker) {
+        low = mid + 1
+      } else {
+        high = mid - 1
+      }
     }
   }
 
