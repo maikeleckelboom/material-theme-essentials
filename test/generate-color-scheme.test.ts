@@ -12,7 +12,7 @@ describe('generateColorScheme', () => {
       value: argbFromHex('#123456'),
     },
     {
-      name: 'My uncle likes to paint',
+      name: 'My Uncle Likes To Paint',
       value: argbFromHex('#b3b974'),
       blend: true,
     },
@@ -101,24 +101,30 @@ describe('generateColorScheme', () => {
     })
   })
 
-  it('should handle invalid color values', async () => {
+  it('should create a color scheme with default strategy', async () => {
     theme = await createMaterialTheme({
       primary: primaryColor,
       staticColors: [
         {
           name: 'Hello this is my color 1',
           value: argbFromHex('#ffffff'),
-        } as const,
+        },
         {
           name: 'Hello this is my color2',
           value: argbFromHex('#123456'),
-        } as const,
+        },
+        {
+          name: 'MY UNCLE LIKES THE PAINT',
+          value: argbFromHex('#b3b974'),
+          blend: true,
+        },
       ],
     })
-    const colorScheme = generateColorScheme(theme, { strategy: 'base' })
+    const colorScheme = generateColorScheme(theme)
     expect(colorScheme).toHaveProperty('primary')
     expect(colorScheme).toHaveProperty('helloThisIsMyColor1')
     expect(colorScheme).toHaveProperty('helloThisIsMyColor2')
+    expect(colorScheme).toHaveProperty('myUncleLikesThePaint')
   })
 
   it('should handle large number of static colors', async () => {

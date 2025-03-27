@@ -111,3 +111,7 @@ export interface Theme {
   }
   customColors: CustomColorGroup[]
 }
+
+export type SchemeGenerationParams = Pick<Theme, 'schemes'> & {
+  customColors?: Theme['customColors'];
+};

@@ -6,7 +6,7 @@ import {
   MaterialDynamicColors,
 } from '@material/material-color-utilities'
 import { camelCase } from '../utils/camel-case'
-import type { ColorScheme, ColorStrategy } from '../types'
+import { ColorScheme, ColorStrategy, SchemeGenerationParams } from '../types'
 
 /**
  * @internal Constants
@@ -73,7 +73,7 @@ function processColorGroup(
 export function processCustomColorGroup(
   colorGroup: CustomColorGroup,
   options: { isDark?: boolean; strategy?: ColorStrategy } = {},
-) {
+): Record<string, number> {
   const { isDark = false, strategy = 'base' } = options
   const adaptiveColorGroup = isDark ? colorGroup.dark : colorGroup.light
   const colorName = colorGroup.color.name
@@ -98,10 +98,12 @@ export function processCustomColorGroup(
       return Object.assign(light, dark)
     }
     case 'complete': {
-      const base = processColorGroup(colorName, adaptiveColorGroup)
-      const light = processColorGroup(colorName, colorGroup.light, LIGHT_SUFFIX)
-      const dark = processColorGroup(colorName, colorGroup.dark, DARK_SUFFIX)
-      return Object.assign(base, light, dark)
+      const base = processCustomColorGroup(colorGroup, { ...options, strategy: 'base' })
+      const dualMode = processCustomColorGroup(colorGroup, {
+        ...options,
+        strategy: 'dual-mode',
+      })
+      return Object.assign(base, dualMode)
     }
     default:
       throw new Error(`Invalid strategy: ${strategy}`)
@@ -124,56 +126,64 @@ export function processCustomColorGroups(
   return result
 }
 
+export type StrategyConfig = {
+  scheme: DynamicScheme
+  suffix?: string
+}[]
+
+/**
+ * Gets the strategy configuration for scheme processing
+ */
+function getStrategyConfig<S extends ColorStrategy>(
+  strategy: S,
+  mode: 'light' | 'dark',
+  schemes: { light: DynamicScheme; dark: DynamicScheme },
+): StrategyConfig {
+  const isDark = mode === 'dark'
+  const currentScheme = isDark ? schemes.dark : schemes.light
+  const alternateScheme = isDark ? schemes.light : schemes.dark
+  const alternateSuffix = isDark ? LIGHT_SUFFIX : DARK_SUFFIX
+
+  const strategyConfigs: Record<ColorStrategy, StrategyConfig> = {
+    base: [{ scheme: currentScheme }],
+    alternate: [
+      { scheme: currentScheme },
+      { scheme: alternateScheme, suffix: alternateSuffix },
+    ],
+    'dual-mode': [
+      { scheme: schemes.light, suffix: LIGHT_SUFFIX },
+      { scheme: schemes.dark, suffix: DARK_SUFFIX },
+    ],
+    complete: [
+      { scheme: currentScheme },
+      { scheme: schemes.light, suffix: LIGHT_SUFFIX },
+      { scheme: schemes.dark, suffix: DARK_SUFFIX },
+    ],
+  }
+
+  if (!(strategy in strategyConfigs)) {
+    throw new Error(`Unexpected strategy: ${strategy}`)
+  }
+
+  return strategyConfigs[strategy]
+}
+
 export function generateColorScheme<S extends ColorStrategy, M extends 'light' | 'dark'>(
-  theme: {
-    schemes: {
-      light: DynamicScheme
-      dark: DynamicScheme
-    }
-    customColors?: CustomColorGroup[]
-  },
-  options: { strategy?: S; mode?: M },
+  theme: SchemeGenerationParams,
+  options: { strategy?: S; mode?: M } = {},
 ): ColorScheme<S, M> & Record<string, number> {
   const { schemes, customColors = [] } = theme
   const { strategy = 'base', mode = 'light' } = options
-  const isDark = mode === 'dark'
 
-  const currentScheme = isDark ? schemes.dark : schemes.light
-  const customColorScheme = processCustomColorGroups(customColors, { isDark, strategy })
+  const config = getStrategyConfig(strategy, mode, schemes)
+  const processedSchemes = config.map(({ scheme, suffix }) =>
+    processSchemeColors(scheme, suffix),
+  )
+  const customColorScheme = processCustomColorGroups(customColors, {
+    isDark: mode === 'dark',
+    strategy,
+  })
 
-  switch (strategy) {
-    case 'base':
-      return Object.assign(
-        processSchemeColors(currentScheme),
-        customColorScheme,
-      ) as ColorScheme<S, M> & Record<string, number>
-
-    case 'alternate': {
-      const alternateScheme = isDark ? schemes.light : schemes.dark
-      const alternateSuffix = isDark ? LIGHT_SUFFIX : DARK_SUFFIX
-      return Object.assign(
-        processSchemeColors(currentScheme),
-        processSchemeColors(alternateScheme, alternateSuffix),
-        customColorScheme,
-      ) as ColorScheme<S, M> & Record<string, number>
-    }
-
-    case 'dual-mode':
-      return Object.assign(
-        processSchemeColors(schemes.light, LIGHT_SUFFIX),
-        processSchemeColors(schemes.dark, DARK_SUFFIX),
-        customColorScheme,
-      ) as ColorScheme<S, M> & Record<string, number>
-
-    case 'complete':
-      return Object.assign(
-        processSchemeColors(currentScheme),
-        processSchemeColors(schemes.light, LIGHT_SUFFIX),
-        processSchemeColors(schemes.dark, DARK_SUFFIX),
-        customColorScheme,
-      ) as ColorScheme<S, M> & Record<string, number>
-
-    default:
-      throw new Error(`Unexpected strategy: ${strategy}`)
-  }
+  return Object.assign({}, ...processedSchemes, customColorScheme) as ColorScheme<S, M> &
+    Record<string, number>
 }
