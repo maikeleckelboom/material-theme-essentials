@@ -51,9 +51,14 @@ function isMaterialThemeOptions(value: ThemeOptions | Seed): value is ThemeOptio
     value !== null && typeof value === 'object' && ('primary' in value || 'seed' in value)
   )
 }
-
+/**
+ * Creates a material theme based on the provided seed or options.
+ * @param seedOrOptions - The seed color or theme options.
+ * @param options - Additional options if seed is provided separately.
+ * @returns A promise that resolves to the generated theme.
+ */
 export async function createMaterialTheme(
-  seed: Seed,
+  seedOrOptions: Seed,
   options?: Omit<ThemeOptions, 'seed'>,
 ): Promise<Theme>
 export async function createMaterialTheme(options: ThemeOptions): Promise<Theme>

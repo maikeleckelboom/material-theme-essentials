@@ -1,4 +1,4 @@
-import { createImageDataFromBitmap, createPixelsArray } from '../utils/image'
+import { createImageDataFromBitmap, createPixelsArray } from './image'
 import { quantizePixels } from './quantize'
 
 export interface QuantizeWorkerOptions {
