@@ -1,8 +1,8 @@
 export enum ContrastLevel {
   Reduced = -1,
   Default = 0,
-  Medium = 0.3,
-  High = 0.6,
+  Medium = 0.25,
+  High = 0.5,
 }
 
 export function listContrastLevels(){

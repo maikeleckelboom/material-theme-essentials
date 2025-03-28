@@ -1,8 +1,6 @@
-import { createMaterialTheme } from '../src/scheme/create-material-theme'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { generateColorScheme } from '../src/scheme/generate-color-scheme'
 import { argbFromHex } from '@material/material-color-utilities'
-import { Strategy } from '../src/types'
+import { createMaterialTheme, generateColorScheme, type Strategy } from '../src'
 
 describe('generateColorScheme', () => {
   const primaryColor = argbFromHex('#4588dc')
@@ -18,7 +16,7 @@ describe('generateColorScheme', () => {
     },
   ]
 
-  const strategies: Strategy[] = ['default', 'contextual', 'split', 'comprehensive']
+  const strategies: Strategy[] = ['base', 'contextual', 'split', 'comprehensive']
 
   const customColorKeys = [
     'myTestColor',
@@ -46,7 +44,7 @@ describe('generateColorScheme', () => {
 
       const expectedCustomKeys: string[] = (() => {
         const strategyTransformations: Record<Strategy, (key: string) => string[]> = {
-          default: (key) => [key],
+          base: (key) => [key],
           contextual: (key) => [key, `${key}Dark`],
           split: (key) => [`${key}Light`, `${key}Dark`],
           comprehensive: (key) => [key, `${key}Light`, `${key}Dark`],
@@ -67,7 +65,7 @@ describe('generateColorScheme', () => {
       ]
 
       switch (strategy) {
-        case 'default':
+        case 'base':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(key)
           })
@@ -101,7 +99,7 @@ describe('generateColorScheme', () => {
     })
   })
 
-  it('should create a color scheme with default strategy', async () => {
+  it('should create a color scheme with base strategy', async () => {
     theme = await createMaterialTheme({
       primary: primaryColor,
       staticColors: [
@@ -136,7 +134,7 @@ describe('generateColorScheme', () => {
       primary: primaryColor,
       staticColors,
     })
-    const colorScheme = generateColorScheme(theme, { strategy: 'default' })
+    const colorScheme = generateColorScheme(theme, { strategy: 'base' })
     expect(colorScheme).toHaveProperty('primary')
   })
 })

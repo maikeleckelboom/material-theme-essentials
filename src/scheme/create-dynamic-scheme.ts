@@ -11,8 +11,9 @@ import {
   SchemeVibrant,
   TonalPalette,
 } from '@material/material-color-utilities'
-import { MaterialSchemeOptions } from './create-material-theme'
-import { toHct } from '../utils/hct'
+import type { MaterialSchemeOptions } from '../types'
+import { toHct } from '../utils'
+import { colorToArgb } from '../utils/conversion'
 
 export enum Variant {
   MONOCHROME,
@@ -38,7 +39,7 @@ const VARIANT_TO_SCHEME_MAP = {
   [Variant.FRUIT_SALAD]: SchemeFruitSalad,
 } as const
 
-export function getSchemeForVariant(
+export function mapVariantToScheme(
   variant: Variant,
 ): (typeof VARIANT_TO_SCHEME_MAP)[Variant] {
   return VARIANT_TO_SCHEME_MAP[variant]
@@ -58,10 +59,18 @@ function isSeedColorBased(options: MaterialSchemeOptions): boolean {
 }
 
 function tryCreateTonalPalette(
-  color: number | undefined,
+  color: string | number | undefined,
   fallback: TonalPalette,
 ): TonalPalette {
-  return typeof color === 'number' ? TonalPalette.fromInt(color) : fallback
+  if (color === undefined) {
+    return fallback
+  }
+  color = colorToArgb(color)
+  const tonalPalette = TonalPalette.fromInt(color)
+  if (tonalPalette === undefined) {
+    return fallback
+  }
+  return tonalPalette
 }
 
 /**
@@ -69,24 +78,25 @@ function tryCreateTonalPalette(
  * Overloaded to accept either a seed color + options or a complete options object.
  */
 export function createDynamicScheme(
-  seed: number,
+  seed: string | number,
   options?: Omit<MaterialSchemeOptions, 'seed' | 'primary'>,
 ): DynamicScheme
 export function createDynamicScheme(options: MaterialSchemeOptions): DynamicScheme
 export function createDynamicScheme(
-  seedOrOptions: number | MaterialSchemeOptions,
+  seedOrOptions: string | number | MaterialSchemeOptions,
   maybeOptions?: Omit<MaterialSchemeOptions, 'seed' | 'primary'>,
 ): DynamicScheme {
   const options: MaterialSchemeOptions =
-    typeof seedOrOptions === 'number'
+    typeof seedOrOptions === 'number' || typeof seedOrOptions === 'string'
       ? { ...maybeOptions, seed: seedOrOptions }
       : seedOrOptions
 
   const { contrast = 0, isDark = false, variant = Variant.TONAL_SPOT } = options
 
-  const sourceColorArgb = Number(options.seed || options.primary)
+  const numericSeed = typeof options.seed === 'number' ? options.seed : undefined
+  const sourceColorArgb = colorToArgb(numericSeed || options.primary || 0)
 
-  const SchemeVariant = getSchemeForVariant(variant)
+  const SchemeVariant = mapVariantToScheme(variant)
   const scheme = new SchemeVariant(toHct(sourceColorArgb), isDark, contrast)
 
   if (isSeedColorBased(options)) {

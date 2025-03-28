@@ -100,7 +100,7 @@ Supported seed types:
 
 ### seedTheme(seed: ThemeSeed): Promise<Theme>
 
-__Generates a default theme from a seed object.__
+__Generates a base theme from a seed object.__
 
 ```ts
 export interface MaterialTheme {
@@ -125,7 +125,7 @@ export interface MaterialTheme {
 
 ### toColorScheme(theme: Theme, options?: SchemeOptions)
 
-__Generates a comprehensive color scheme from a default theme.__
+__Generates a comprehensive color scheme from a base theme.__
 
 Configuration options:
 
@@ -210,7 +210,7 @@ export type OppositeColorScheme<T extends 'light' | 'dark'> = T extends 'dark'
   : ColorSchemeLight
 
 export type ColorSchemeStrategyMap<K extends 'light' | 'dark'> = {
-  'default': BaseColorScheme
+  'base': BaseColorScheme
   'contextual': BaseColorScheme & OppositeColorScheme<K>
   'split': ColorSchemeLight & ColorSchemeDark
   'comprehensive': BaseColorScheme & ColorSchemeLight & ColorSchemeDark

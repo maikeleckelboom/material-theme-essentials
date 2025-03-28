@@ -1,56 +1,15 @@
 import { customColor, TonalPalette } from '@material/material-color-utilities'
 import { createDynamicScheme, Variant } from './create-dynamic-scheme'
-import { resolveSourceColor } from './resolve-source-color'
-import { Theme } from '../types'
-
-export interface CorePaletteColors {
-  primary?: number
-  secondary?: number
-  tertiary?: number
-  neutral?: number
-  neutralVariant?: number
-}
-
-export interface BaseSchemeOptions extends CorePaletteColors {
-  variant?: Variant
-  contrast?: number
-  isDark?: boolean
-  isAmoled?: boolean
-}
-
-export type Seed =
-  | number
-  | string
-  | SVGElement
-  | HTMLOrSVGImageElement
-  | HTMLVideoElement
-  | HTMLCanvasElement
-  | ImageBitmap
-  | OffscreenCanvas
-  | VideoFrame
-  | Blob
-  | ImageData
-  | ImageBitmapSource
-
-export type MaterialSchemeOptions =
-  | (BaseSchemeOptions & { primary: number; seed?: Seed })
-  | (BaseSchemeOptions & { seed: Seed; primary?: number })
-
-export interface StaticColor {
-  name: string
-  value: number
-  blend?: boolean
-}
-
-export type ThemeOptions = Omit<MaterialSchemeOptions, 'isDark'> & {
-  staticColors?: StaticColor[]
-}
+import { getSourceColor, resolveSourceColor } from './resolve-source-color'
+import type { Seed, Theme, ThemeOptions } from '../types'
+import { colorToArgb } from '../utils/conversion'
 
 function isMaterialThemeOptions(value: ThemeOptions | Seed): value is ThemeOptions {
   return (
     value !== null && typeof value === 'object' && ('primary' in value || 'seed' in value)
   )
 }
+
 /**
  * Creates a material theme based on the provided seed or options.
  * @param seedOrOptions - The seed color or theme options.
@@ -117,16 +76,19 @@ export async function createMaterialTheme(
       dark: darkScheme,
     },
     palettes: {
-      primary: TonalPalette.fromInt(primary || source),
-      secondary: secondary ? TonalPalette.fromInt(secondary) : core.a2,
-      tertiary: tertiary ? TonalPalette.fromInt(tertiary) : core.a3,
-      neutral: neutral ? TonalPalette.fromInt(neutral) : core.n1,
-      neutralVariant: neutralVariant ? TonalPalette.fromInt(neutralVariant) : core.n2,
+      primary: TonalPalette.fromInt(colorToArgb(primary || source)),
+      secondary: secondary ? TonalPalette.fromInt(colorToArgb(secondary)) : core.a2,
+      tertiary: tertiary ? TonalPalette.fromInt(colorToArgb(tertiary)) : core.a3,
+      neutral: neutral ? TonalPalette.fromInt(colorToArgb(neutral)) : core.n1,
+      neutralVariant: neutralVariant
+        ? TonalPalette.fromInt(colorToArgb(neutralVariant))
+        : core.n2,
       error: core.error,
     },
     customColors: staticColors.map((color) =>
       customColor(source, {
-        ...color,
+        name: color.name,
+        value: getSourceColor(color.value),
         blend: !!color.blend,
       }),
     ),

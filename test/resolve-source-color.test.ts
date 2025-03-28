@@ -1,5 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { resolveSourceColor } from '../src/scheme/resolve-source-color'
+import { resolveSourceColor } from '../src'
 import { argbFromHex } from '@material/material-color-utilities'
 
 export const IMAGE_URL: string =  new URL('./assets/webp_image.webp', import.meta.url).href

@@ -1,5 +1,6 @@
-import { createImageDataFromBitmap, createPixelsArray } from './image'
+import { createPixelsArray } from './image'
 import { quantizePixels } from './quantize'
+import { createImageDataFromBitmap } from './image.browser'
 
 export interface QuantizeWorkerOptions {
   maxColors?: number

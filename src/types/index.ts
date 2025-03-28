@@ -1,6 +1,6 @@
 import { Variant } from '../scheme'
 import {
-  CustomColorGroup,
+  type CustomColorGroup,
   DynamicScheme,
   TonalPalette,
 } from '@material/material-color-utilities'
@@ -75,7 +75,7 @@ export type ColorSchemeAlternate<T extends 'light' | 'dark'> = T extends 'dark'
   : ColorSchemeLight
 
 export type ColorSchemeStrategyMap<V extends 'light' | 'dark' = 'light' | 'dark'> = {
-  default: ColorScheme
+  base: ColorScheme
   contextual: ColorScheme & ColorSchemeAlternate<V>
   split: ColorSchemeLight & ColorSchemeDark
   comprehensive: ColorScheme & ColorSchemeLight & ColorSchemeDark
@@ -114,4 +114,48 @@ export type SchemeGenerationParams = Pick<Theme, 'schemes'> & {
 export type PaletteGenerationParams = {
   palettes?: Partial<Theme['palettes']>
   customColors?: Theme['customColors']
+}
+
+export interface CorePaletteColors {
+  primary?: string | number
+  secondary?: string | number
+  tertiary?: string | number
+  neutral?: string | number
+  neutralVariant?: string | number
+}
+
+export interface BaseSchemeOptions extends CorePaletteColors {
+  variant?: Variant
+  contrast?: number
+  isDark?: boolean
+  withAmoled?: boolean
+}
+
+// TODO: Refactor to name it to: source
+export type Seed =
+  | number
+  | string
+  | SVGElement
+  | HTMLOrSVGImageElement
+  | HTMLVideoElement
+  | HTMLCanvasElement
+  | ImageBitmap
+  | OffscreenCanvas
+  | VideoFrame
+  | Blob
+  | ImageData
+  | ImageBitmapSource
+
+export type MaterialSchemeOptions =
+  | (BaseSchemeOptions & { primary: string | number; seed?: Seed })
+  | (BaseSchemeOptions & { seed: Seed; primary?: string | number })
+
+export interface StaticColor {
+  name: string
+  value: string | number
+  blend?: boolean
+}
+
+export type ThemeOptions = MaterialSchemeOptions & {
+  staticColors?: StaticColor[]
 }

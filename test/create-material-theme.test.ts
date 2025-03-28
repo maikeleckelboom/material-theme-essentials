@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { createMaterialTheme } from '../src/scheme/create-material-theme'
+import { createMaterialTheme } from '../src'
 
 beforeAll(async () => {})
 

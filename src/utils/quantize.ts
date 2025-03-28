@@ -2,8 +2,8 @@ import { QuantizerCelebi } from '@material/material-color-utilities'
 import {
   createQuantizeWorker,
   isDoneEvent,
-  QuantizeWorkerOptions,
-  QuantizeWorkerResult,
+  type QuantizeWorkerOptions,
+  type QuantizeWorkerResult,
 } from './quantize.worker'
 
 export const DEFAULT_QUANTIZE_MAX_COLORS: number = 128 as const
@@ -13,6 +13,19 @@ export function quantizePixels(
   maxColors: number = DEFAULT_QUANTIZE_MAX_COLORS,
 ): Map<number, number> {
   return QuantizerCelebi.quantize(pixels, maxColors)
+}
+
+export function quantizeSync(imageBitmap: ImageBitmap): Map<number, number> {
+  const imageData = new ImageData(imageBitmap.width, imageBitmap.height)
+  const ctx = new OffscreenCanvas(imageBitmap.width, imageBitmap.height).getContext('2d')
+  ctx?.drawImage(imageBitmap, 0, 0)
+  ctx
+    ?.getImageData(0, 0, imageBitmap.width, imageBitmap.height)
+    .data.forEach((pixel, index) => {
+      imageData.data[index] = pixel
+    })
+
+  return quantizePixels(Array.from(imageData.data), DEFAULT_QUANTIZE_MAX_COLORS)
 }
 
 export async function quantize(
