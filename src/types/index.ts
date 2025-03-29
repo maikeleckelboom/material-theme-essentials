@@ -1,16 +1,19 @@
-import { Variant } from '../scheme'
 import {
   type CustomColorGroup,
   DynamicScheme,
   TonalPalette,
 } from '@material/material-color-utilities'
+import { Variant } from '../utils/variant'
 
-export interface ColorScheme {
+interface PaletteKeyColors {
   primaryPaletteKeyColor: number
   secondaryPaletteKeyColor: number
   tertiaryPaletteKeyColor: number
   neutralPaletteKeyColor: number
   neutralVariantPaletteKeyColor: number
+}
+
+export interface ColorScheme extends PaletteKeyColors {
   background: number
   onBackground: number
   surface: number
@@ -74,10 +77,11 @@ export type ColorSchemeAlternate<T extends 'light' | 'dark'> = T extends 'dark'
   ? ColorSchemeDark
   : ColorSchemeLight
 
+
 export type ColorSchemeStrategyMap<V extends 'light' | 'dark' = 'light' | 'dark'> = {
-  base: ColorScheme
-  contextual: ColorScheme & ColorSchemeAlternate<V>
-  split: ColorSchemeLight & ColorSchemeDark
+  default: ColorScheme
+  combined: ColorScheme & ColorSchemeAlternate<V>
+  separated: ColorSchemeLight & ColorSchemeDark
   comprehensive: ColorScheme & ColorSchemeLight & ColorSchemeDark
 }
 
@@ -107,12 +111,13 @@ export interface Theme {
   customColors: CustomColorGroup[]
 }
 
-export type SchemeGenerationParams = Pick<Theme, 'schemes'> & {
+export type SchemeGenerationParams ={
+  schemes: Theme['schemes']
   customColors?: Theme['customColors']
 }
 
 export type PaletteGenerationParams = {
-  palettes?: Partial<Theme['palettes']>
+  palettes: Partial<Theme['palettes']>
   customColors?: Theme['customColors']
 }
 

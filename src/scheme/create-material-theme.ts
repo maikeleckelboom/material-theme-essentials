@@ -1,8 +1,9 @@
 import { customColor, TonalPalette } from '@material/material-color-utilities'
-import { createDynamicScheme, Variant } from './create-dynamic-scheme'
-import { getSourceColor, resolveSourceColor } from './resolve-source-color'
-import type { Seed, Theme, ThemeOptions } from '../types'
+import { createDynamicScheme } from './create-dynamic-scheme'
+import { resolveSourceColor } from './resolve-source-color'
 import { colorToArgb } from '../utils/conversion'
+import { Variant } from '../utils/variant'
+import type { Seed, Theme, ThemeOptions } from '../types'
 
 function isMaterialThemeOptions(value: ThemeOptions | Seed): value is ThemeOptions {
   return (
@@ -42,7 +43,7 @@ export async function createMaterialTheme(
     staticColors = [],
   } = opts
 
-  const createScheme = (isDark: boolean = false) =>
+  const newScheme = (isDark: boolean = false) =>
     createDynamicScheme({
       seed: source,
       isDark,
@@ -55,8 +56,8 @@ export async function createMaterialTheme(
       variant,
     })
 
-  const lightScheme = createScheme()
-  const darkScheme = createScheme(true)
+  const lightScheme = newScheme()
+  const darkScheme = newScheme(true)
 
   const core = {
     a1: lightScheme.primaryPalette,
@@ -88,7 +89,7 @@ export async function createMaterialTheme(
     customColors: staticColors.map((color) =>
       customColor(source, {
         name: color.name,
-        value: getSourceColor(color.value),
+        value: colorToArgb(color.value),
         blend: !!color.blend,
       }),
     ),

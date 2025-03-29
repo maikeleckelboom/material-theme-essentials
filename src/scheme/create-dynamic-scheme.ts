@@ -1,49 +1,11 @@
 import {
   DynamicScheme,
-  SchemeContent,
-  SchemeExpressive,
-  SchemeFidelity,
-  SchemeFruitSalad,
-  SchemeMonochrome,
-  SchemeNeutral,
-  SchemeRainbow,
-  SchemeTonalSpot,
-  SchemeVibrant,
   TonalPalette,
 } from '@material/material-color-utilities'
 import type { MaterialSchemeOptions } from '../types'
 import { toHct } from '../utils'
 import { colorToArgb } from '../utils/conversion'
-
-export enum Variant {
-  MONOCHROME,
-  NEUTRAL,
-  TONAL_SPOT,
-  VIBRANT,
-  EXPRESSIVE,
-  FIDELITY,
-  CONTENT,
-  RAINBOW,
-  FRUIT_SALAD,
-}
-
-const VARIANT_TO_SCHEME_MAP = {
-  [Variant.MONOCHROME]: SchemeMonochrome,
-  [Variant.NEUTRAL]: SchemeNeutral,
-  [Variant.TONAL_SPOT]: SchemeTonalSpot,
-  [Variant.VIBRANT]: SchemeVibrant,
-  [Variant.EXPRESSIVE]: SchemeExpressive,
-  [Variant.FIDELITY]: SchemeFidelity,
-  [Variant.CONTENT]: SchemeContent,
-  [Variant.RAINBOW]: SchemeRainbow,
-  [Variant.FRUIT_SALAD]: SchemeFruitSalad,
-} as const
-
-export function mapVariantToScheme(
-  variant: Variant,
-): (typeof VARIANT_TO_SCHEME_MAP)[Variant] {
-  return VARIANT_TO_SCHEME_MAP[variant]
-}
+import { mapVariantToScheme, Variant } from '../utils/variant'
 
 function isSeedColorBased(options: MaterialSchemeOptions): boolean {
   const hasColorSource = !!options.seed || !!options.primary
@@ -75,7 +37,7 @@ function tryCreateTonalPalette(
 
 /**
  * Generates a dynamic color scheme based on the provided configuration options.
- * Overloaded to accept either a seed color + options or a complete options object.
+ * Overloaded to accept either a seed color + options or a comprehensive options object.
  */
 export function createDynamicScheme(
   seed: string | number,

@@ -16,7 +16,7 @@ describe('generateColorScheme', () => {
     },
   ]
 
-  const strategies: Strategy[] = ['base', 'contextual', 'split', 'comprehensive']
+  const strategies: Strategy[] = ['default', 'combined', 'separated', 'comprehensive']
 
   const customColorKeys = [
     'myTestColor',
@@ -44,9 +44,9 @@ describe('generateColorScheme', () => {
 
       const expectedCustomKeys: string[] = (() => {
         const strategyTransformations: Record<Strategy, (key: string) => string[]> = {
-          base: (key) => [key],
-          contextual: (key) => [key, `${key}Dark`],
-          split: (key) => [`${key}Light`, `${key}Dark`],
+          default: (key) => [key],
+          combined: (key) => [key, `${key}Dark`],
+          separated: (key) => [`${key}Light`, `${key}Dark`],
           comprehensive: (key) => [key, `${key}Light`, `${key}Dark`],
         }
 
@@ -65,18 +65,18 @@ describe('generateColorScheme', () => {
       ]
 
       switch (strategy) {
-        case 'base':
+        case 'default':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(key)
           })
           break
-        case 'contextual':
+        case 'combined':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(key)
             expect(colorScheme).toHaveProperty(`${key}Dark`)
           })
           break
-        case 'split':
+        case 'separated':
           expectedSchemeKeys.forEach((key) => {
             expect(colorScheme).toHaveProperty(`${key}Light`)
             expect(colorScheme).toHaveProperty(`${key}Dark`)
@@ -99,7 +99,7 @@ describe('generateColorScheme', () => {
     })
   })
 
-  it('should create a color scheme with base strategy', async () => {
+  it('should create a color scheme with default strategy', async () => {
     theme = await createMaterialTheme({
       primary: primaryColor,
       staticColors: [
@@ -134,7 +134,7 @@ describe('generateColorScheme', () => {
       primary: primaryColor,
       staticColors,
     })
-    const colorScheme = generateColorScheme(theme, { strategy: 'base' })
+    const colorScheme = generateColorScheme(theme, { strategy: 'default' })
     expect(colorScheme).toHaveProperty('primary')
   })
 })

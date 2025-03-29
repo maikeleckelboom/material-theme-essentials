@@ -1,5 +1,4 @@
 import { argbFromRgb } from '@material/material-color-utilities'
-import { PATH_PATTERN } from './constants'
 
 export function createPixelsArray({ data }: ImageData): number[] {
   const pixels: number[] = []
